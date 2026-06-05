@@ -44,7 +44,7 @@ DATA_DIR = PROJECT_ROOT / "data"
 FIGURE_DIR = PROJECT_ROOT / "outputs/figures"
 RESULT_DIR = PROJECT_ROOT / "outputs/results"
 MODEL_DIR = PROJECT_ROOT / "models"
-DATASET_PATH = DATA_DIR / "simulated_spectrum_dataset.csv"
+DATASET_PATH = DATA_DIR / "real_spectrum_weather_dataset.csv"
 MODEL_PATH = MODEL_DIR / "spectrum_model.joblib"
 
 
@@ -78,7 +78,13 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
     base_df = save_base_spectrum(DATA_DIR / "base_spectrum.csv")
     dual_white_df = fetch_and_build_dual_white_spectrum(DATA_DIR / "dual_white_led_spectrum.csv")
     source_frame().to_csv(DATA_DIR / "dual_white_led_sources.csv", index=False, encoding="utf-8-sig")
-    dataset = generate_dataset(n_samples=n_samples, seed=seed)
+    
+    if not DATASET_PATH.exists():
+        print("[Pipeline] Real spectrum-weather dataset not found. Running fetching/alignment pipeline...")
+        from . import real_data_pipeline
+        real_data_pipeline.main()
+        
+    dataset = pd.read_csv(DATASET_PATH, encoding="utf-8-sig")
     dataset = append_recommendations(dataset)
     save_dataset(dataset, DATASET_PATH)
     save_sample_weather(dataset, DATA_DIR / "sample_weather.csv")

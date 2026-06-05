@@ -482,7 +482,7 @@ with tabs[2]:
     
     pred_compare_rows = []
     for wl, t_val, p_val in zip(WAVELENGTHS, true_spec, pred_spec):
-        pred_compare_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "曲线": "模拟真实光谱"})
+        pred_compare_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "曲线": "真实测量光谱"})
         pred_compare_rows.append({"波长(nm)": int(wl), "相对强度": float(p_val), "曲线": "模型预测光谱"})
     pred_compare_df = pd.DataFrame(pred_compare_rows)
     
@@ -491,8 +491,8 @@ with tabs[2]:
         x="波长(nm)",
         y="相对强度",
         color="曲线",
-        title=f"随机样本 #{sample_number}：预测光谱与模拟真实光谱的吻合度",
-        color_discrete_map={"模拟真实光谱": "#2f6fed", "模型预测光谱": "#f59e0b"},
+        title=f"随机样本 #{sample_number}：预测光谱与真实测量光谱的吻合度",
+        color_discrete_map={"真实测量光谱": "#2f6fed", "模型预测光谱": "#f59e0b"},
     )
     fig3.update_traces(line=dict(width=3))
     fig3.update_layout(height=380, hovermode="x unified", margin=dict(l=20, r=20, t=60, b=20), legend_title_text="")
