@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -52,6 +54,15 @@ st.markdown(
         padding: 0.65rem 0.8rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
+    div[data-testid="stMetricLabel"], div[data-testid="stMetricLabel"] * {
+        font-size: 0.8rem !important;
+        color: #64748b !important;
+    }
+    div[data-testid="stMetricValue"], div[data-testid="stMetricValue"] * {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+    }
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.4rem;
     }
@@ -91,6 +102,24 @@ st.markdown(
             grid-template-columns: repeat(2, minmax(120px, 1fr));
         }
     }
+    /* Sidebar buttons styling */
+    div[data-testid="stSidebar"] button {
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.25s ease !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
+        color: #334155 !important;
+        font-size: 0.85rem !important;
+        height: 2.4rem !important;
+        padding: 0px 4px !important;
+    }
+    div[data-testid="stSidebar"] button:hover {
+        border-color: #2f6fed !important;
+        color: #2f6fed !important;
+        background-color: #f0f7ff !important;
+        box-shadow: 0 2px 4px rgba(47, 111, 237, 0.08) !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -110,6 +139,16 @@ def estimate_outdoor_lux(weather: str, cloud_cover: float, humidity: float, sola
     return float(np.clip(105000 * altitude_factor * weather_transmission * cloud_factor * humidity_factor, 300, 115000))
 
 
+def find_test_sample(x_test, weather, target_hour):
+    # Filter by weather
+    subset = x_test[x_test["weather"] == weather]
+    if subset.empty:
+        return None
+    # Find the row with hour closest to target_hour
+    idx = (subset["hour"] - target_hour).abs().idxmin()
+    return int(idx)
+
+
 st.title("自然光相对光谱预测与室内照明补偿")
 st.caption("基于机器学习的自然光光谱还原与多通道可调 LED 光谱级室内补光仿真系统")
 
@@ -127,15 +166,128 @@ except Exception as exc:
 metrics = model_result.metrics.copy()
 best_row = metrics[metrics["model"] == model_result.best_model_name].iloc[0]
 
+# Initialize session state for environmental parameters if they don't exist
+if "env_weather" not in st.session_state:
+    st.session_state["env_weather"] = "晴"
+if "env_hour" not in st.session_state:
+    st.session_state["env_hour"] = 12
+if "env_cloud_cover" not in st.session_state:
+    st.session_state["env_cloud_cover"] = 0.18
+if "env_humidity" not in st.session_state:
+    st.session_state["env_humidity"] = 0.55
+if "env_temperature" not in st.session_state:
+    st.session_state["env_temperature"] = 25.0
+if "env_precipitation" not in st.session_state:
+    st.session_state["env_precipitation"] = 0.0
+if "comparison_test_idx" not in st.session_state:
+    st.session_state["comparison_test_idx"] = None
+
+# Check if current state matches ref_row to auto-clear comparison mode
+if st.session_state["comparison_test_idx"] is not None:
+    test_idx = st.session_state["comparison_test_idx"]
+    ref_row = model_result.x_test.loc[test_idx]
+    matches = (
+        st.session_state["env_weather"] == ref_row["weather"] and
+        st.session_state["env_hour"] == int(ref_row["hour"]) and
+        abs(st.session_state["env_cloud_cover"] - ref_row["cloud_cover"]) < 1e-4 and
+        abs(st.session_state["env_humidity"] - ref_row["humidity"]) < 1e-4 and
+        abs(st.session_state["env_temperature"] - ref_row["temperature"]) < 1e-4 and
+        abs(st.session_state["env_precipitation"] - ref_row["precipitation"]) < 1e-4
+    )
+    if not matches:
+        st.session_state["comparison_test_idx"] = None
+
 # Side bar input variables
 with st.sidebar:
     st.subheader("环境输入条件")
-    weather = st.selectbox("天气状况", ["晴", "多云", "阴", "雨"], index=0)
-    hour = st.slider("时间 (小时)", min_value=6, max_value=18, value=12, step=1)
-    cloud_cover = st.slider("云量", min_value=0.0, max_value=1.0, value=0.18, step=0.01)
-    humidity = st.slider("环境湿度", min_value=0.2, max_value=1.0, value=0.55, step=0.01)
-    temperature = st.slider("环境温度 / ℃", min_value=0.0, max_value=40.0, value=25.0, step=0.5)
-    precipitation = st.slider("降水强度", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+    
+    # Environment Presets Card
+    st.markdown(
+        """
+        <div style="
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem 0.8rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        ">
+            <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">
+                气象参数实验对比
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    
+    # Grid of buttons for presets
+    p_col1, p_col2 = st.columns(2)
+    with p_col1:
+        if st.button("晴朗正午", use_container_width=True, key="btn_sunny_noon"):
+            test_idx = find_test_sample(model_result.x_test, "晴", 12)
+            if test_idx is not None:
+                ref_row = model_result.x_test.loc[test_idx]
+                st.session_state["env_weather"] = ref_row["weather"]
+                st.session_state["env_hour"] = int(ref_row["hour"])
+                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
+                st.session_state["env_humidity"] = float(ref_row["humidity"])
+                st.session_state["env_temperature"] = float(ref_row["temperature"])
+                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
+                st.session_state["comparison_test_idx"] = test_idx
+                st.toast("已加载真实样本进行气象参数实验对比")
+            st.rerun()
+            
+        if st.button("阴天清晨", use_container_width=True, key="btn_overcast_morning"):
+            test_idx = find_test_sample(model_result.x_test, "阴", 7)
+            if test_idx is not None:
+                ref_row = model_result.x_test.loc[test_idx]
+                st.session_state["env_weather"] = ref_row["weather"]
+                st.session_state["env_hour"] = int(ref_row["hour"])
+                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
+                st.session_state["env_humidity"] = float(ref_row["humidity"])
+                st.session_state["env_temperature"] = float(ref_row["temperature"])
+                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
+                st.session_state["comparison_test_idx"] = test_idx
+                st.toast("已加载真实样本进行气象参数实验对比")
+            st.rerun()
+            
+    with p_col2:
+        if st.button("雨天下午", use_container_width=True, key="btn_rainy_afternoon"):
+            test_idx = find_test_sample(model_result.x_test, "雨", 15)
+            if test_idx is not None:
+                ref_row = model_result.x_test.loc[test_idx]
+                st.session_state["env_weather"] = ref_row["weather"]
+                st.session_state["env_hour"] = int(ref_row["hour"])
+                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
+                st.session_state["env_humidity"] = float(ref_row["humidity"])
+                st.session_state["env_temperature"] = float(ref_row["temperature"])
+                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
+                st.session_state["comparison_test_idx"] = test_idx
+                st.toast("已加载真实样本进行气象参数实验对比")
+            st.rerun()
+            
+        if st.button("多云傍晚", use_container_width=True, key="btn_cloudy_evening"):
+            test_idx = find_test_sample(model_result.x_test, "多云", 18)
+            if test_idx is not None:
+                ref_row = model_result.x_test.loc[test_idx]
+                st.session_state["env_weather"] = ref_row["weather"]
+                st.session_state["env_hour"] = int(ref_row["hour"])
+                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
+                st.session_state["env_humidity"] = float(ref_row["humidity"])
+                st.session_state["env_temperature"] = float(ref_row["temperature"])
+                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
+                st.session_state["comparison_test_idx"] = test_idx
+                st.toast("已加载真实样本进行气象参数实验对比")
+            st.rerun()
+            
+    st.divider()
+
+    weather = st.selectbox("天气状况", ["晴", "多云", "阴", "雨"], key="env_weather")
+    hour = st.slider("时间 (小时)", min_value=6, max_value=18, step=1, key="env_hour")
+    cloud_cover = st.slider("云量", min_value=0.0, max_value=1.0, step=0.01, key="env_cloud_cover")
+    humidity = st.slider("环境湿度", min_value=0.2, max_value=1.0, step=0.01, key="env_humidity")
+    temperature = st.slider("环境温度 / ℃", min_value=0.0, max_value=40.0, step=0.5, key="env_temperature")
+    precipitation = st.slider("降水强度", min_value=0.0, max_value=1.0, step=0.01, key="env_precipitation")
     
     solar_altitude = solar_altitude_from_hour(hour)
     outdoor_lux = estimate_outdoor_lux(weather, cloud_cover, humidity, solar_altitude)
@@ -239,7 +391,8 @@ with tabs[1]:
     st.subheader("日光光谱物理特性分析")
     
     # Load standard solar spectrum from data folder
-    base_spectrum_df = pd.read_csv("data/base_spectrum.csv")
+    app_dir = Path(__file__).resolve().parent
+    base_spectrum_df = pd.read_csv(app_dir / "data/base_spectrum.csv")
     fig = px.line(
         base_spectrum_df,
         x="wavelength_nm",
@@ -355,13 +508,37 @@ with tabs[3]:
     m4.metric("补光后 RMSE", f"{compensation.after_rmse:.4f}")
 
     # Plot predicted spectrum
-    predict_df = pd.DataFrame({
-        "波长(nm)": WAVELENGTHS,
-        "相对强度": pred_spectrum
-    })
-    fig_pred = px.line(predict_df, x="波长(nm)", y="相对强度", title="输入条件预测出的自然光相对光谱形态")
-    fig_pred.update_traces(line=dict(color="#1f77b4", width=3))
-    fig_pred.update_layout(height=360, margin=dict(l=20, r=20, t=50, b=20))
+    test_idx = st.session_state.get("comparison_test_idx")
+    if test_idx is not None:
+        # Experimental Comparison Mode: plot true vs predicted
+        true_spec = model_result.y_test_spectrum[test_idx]
+        true_spec = true_spec / true_spec.max()  # normalize
+        
+        compare_rows = []
+        for wl, t_val, p_val in zip(WAVELENGTHS, true_spec, pred_spectrum):
+            compare_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "光谱曲线": "原始真实光谱"})
+            compare_rows.append({"波长(nm)": int(wl), "相对强度": float(p_val), "光谱曲线": "模型预测光谱"})
+        compare_df = pd.DataFrame(compare_rows)
+        
+        fig_pred = px.line(
+            compare_df,
+            x="波长(nm)",
+            y="相对强度",
+            color="光谱曲线",
+            title="气象参数实验对比：原始真实光谱 vs 模型预测光谱",
+            color_discrete_map={"原始真实光谱": "#2f6fed", "模型预测光谱": "#f59e0b"},
+        )
+        fig_pred.update_traces(line=dict(width=3))
+    else:
+        # Manual Mode: plot predicted only
+        predict_df = pd.DataFrame({
+            "波长(nm)": WAVELENGTHS,
+            "相对强度": pred_spectrum
+        })
+        fig_pred = px.line(predict_df, x="波长(nm)", y="相对强度", title="输入条件预测出的自然光相对光谱形态")
+        fig_pred.update_traces(line=dict(color="#1f77b4", width=3))
+        
+    fig_pred.update_layout(height=360, margin=dict(l=20, r=20, t=50, b=20), legend_title_text="")
     st.plotly_chart(fig_pred, use_container_width=True)
 
     c1, c2 = st.columns([0.9, 1.1])
@@ -454,6 +631,7 @@ with tabs[3]:
     # Premium CIE color halo simulation card
     st.divider()
     st.subheader("CIE 1964 标准色度空间映射及光色对比")
+    st.caption("注：此图表仅为数值仿真模拟，受色彩转换限制及显示设备偏差影响，可能与实际光色效果存在较大不一致。")
     color_comp = light_color_comparison_frame(compensation)
     
     st.dataframe(color_comp, use_container_width=True, hide_index=True)

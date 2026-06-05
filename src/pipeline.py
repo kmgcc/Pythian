@@ -7,8 +7,10 @@ import pandas as pd
 
 try:
     import matplotlib.pyplot as plt
-except ImportError:  # pragma: no cover
-    plt = None
+except ImportError as exc:  # pragma: no cover - depends on local runtime
+    raise ImportError(
+        "缺少可视化依赖 matplotlib。请先运行 pip install -r requirements.txt 后再运行流水线。"
+    ) from exc
 
 from .data_generator import (
     SPECTRUM_COLUMNS,
@@ -37,10 +39,11 @@ from .visualization import (
 )
 
 
-DATA_DIR = Path("data")
-FIGURE_DIR = Path("outputs/figures")
-RESULT_DIR = Path("outputs/results")
-MODEL_DIR = Path("models")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
+FIGURE_DIR = PROJECT_ROOT / "outputs/figures"
+RESULT_DIR = PROJECT_ROOT / "outputs/results"
+MODEL_DIR = PROJECT_ROOT / "models"
 DATASET_PATH = DATA_DIR / "simulated_spectrum_dataset.csv"
 MODEL_PATH = MODEL_DIR / "spectrum_model.joblib"
 
@@ -124,25 +127,21 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
         encoding="utf-8-sig",
     )
 
-    try:
-        figures = [
-            plot_base_spectrum(base_df, FIGURE_DIR / "base_spectrum.png"),
-            plot_weather_spectrum_compare(dataset, FIGURE_DIR / "weather_spectrum_compare.png"),
-            plot_hourly_lux(dataset, FIGURE_DIR / "hourly_lux.png"),
-            plot_pca_variance(result.pca, FIGURE_DIR / "pca_variance.png"),
-            plot_model_compare(result.metrics, FIGURE_DIR / "model_compare.png"),
-            plot_prediction_compare(true_spectrum, pred_spectrum, FIGURE_DIR / "prediction_compare.png"),
-            plot_feature_importance(result.feature_importance, FIGURE_DIR / "feature_importance.png"),
-            plot_channel_weights(compensation.channel_weights, FIGURE_DIR / "led_channel_weights.png"),
-            plot_channel_contributions(compensation, FIGURE_DIR / "led_channel_contributions.png"),
-            plot_band_error_reduction(compensation, FIGURE_DIR / "band_error_reduction.png"),
-            plot_light_halo_comparison(compensation, FIGURE_DIR / "light_halo_comparison.png"),
-            plot_compensation_result(compensation, FIGURE_DIR / "compensation_result.png"),
-        ]
-        if plt is not None:
-            for fig in figures:
-                plt.close(fig)
-    except RuntimeError as exc:
-        print(f"Figure export skipped: {exc}")
+    figures = [
+        plot_base_spectrum(base_df, FIGURE_DIR / "base_spectrum.png"),
+        plot_weather_spectrum_compare(dataset, FIGURE_DIR / "weather_spectrum_compare.png"),
+        plot_hourly_lux(dataset, FIGURE_DIR / "hourly_lux.png"),
+        plot_pca_variance(result.pca, FIGURE_DIR / "pca_variance.png"),
+        plot_model_compare(result.metrics, FIGURE_DIR / "model_compare.png"),
+        plot_prediction_compare(true_spectrum, pred_spectrum, FIGURE_DIR / "prediction_compare.png"),
+        plot_feature_importance(result.feature_importance, FIGURE_DIR / "feature_importance.png"),
+        plot_channel_weights(compensation.channel_weights, FIGURE_DIR / "led_channel_weights.png"),
+        plot_channel_contributions(compensation, FIGURE_DIR / "led_channel_contributions.png"),
+        plot_band_error_reduction(compensation, FIGURE_DIR / "band_error_reduction.png"),
+        plot_light_halo_comparison(compensation, FIGURE_DIR / "light_halo_comparison.png"),
+        plot_compensation_result(compensation, FIGURE_DIR / "compensation_result.png"),
+    ]
+    for fig in figures:
+        plt.close(fig)
 
     return dataset, result

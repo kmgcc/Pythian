@@ -21,11 +21,21 @@
 pip install numpy pandas matplotlib seaborn scikit-learn
 ```
 
-完整演示环境还需要 Streamlit、Notebook、Requests、Pillow 等辅助依赖，推荐直接安装：
+核心依赖包括：
+
+- numpy
+- pandas
+- matplotlib
+- seaborn
+- scikit-learn
+
+完整演示环境还需要 Streamlit、Notebook、Requests、Joblib 等辅助依赖，推荐直接安装：
 
 ```bash
 pip install -r requirements.txt
 ```
+
+项目正式可视化统一使用 matplotlib，必要时使用 seaborn；如果运行环境缺少 matplotlib 或 seaborn，请先安装依赖后再生成图表。
 
 ## 一键生成数据、模型和图表
 

@@ -17,8 +17,9 @@ MEASURED_LED_PAGE_URL = "https://haraldbrendel.com/ledspd.html"
 TUNABLE_WHITE_REFERENCE_URL = (
     "https://www.digikey.com/en/htmldatasheets/production/3032525/0/0/1/l1cu-rng1000000000.html"
 )
-RAW_LED_SPD_PATH = Path("data/external/led_spd_350_700.csv")
-DUAL_WHITE_SPECTRUM_PATH = Path("data/dual_white_led_spectrum.csv")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RAW_LED_SPD_PATH = PROJECT_ROOT / "data/external/led_spd_350_700.csv"
+DUAL_WHITE_SPECTRUM_PATH = PROJECT_ROOT / "data/dual_white_led_spectrum.csv"
 
 
 def _download_text(url: str, path: Path, timeout: int = 25) -> str:
@@ -142,7 +143,7 @@ def load_dual_white_spectrum(
 
 def source_frame(force: bool = False) -> pd.DataFrame:
     """Return source information; optionally fetch the reference HTML once for cache evidence."""
-    reference_cache = Path("data/external/tunable_white_reference.html")
+    reference_cache = PROJECT_ROOT / "data/external/tunable_white_reference.html"
     if force or not reference_cache.exists():
         try:
             _download_text(TUNABLE_WHITE_REFERENCE_URL, reference_cache)

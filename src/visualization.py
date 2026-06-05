@@ -4,17 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
 
 try:
     import matplotlib.pyplot as plt
     import seaborn as sns
-except ImportError as exc:  # pragma: no cover - friendly fallback for minimal runtimes
-    plt = None
-    sns = None
-    PLOT_IMPORT_ERROR: ImportError | None = exc
-else:
-    PLOT_IMPORT_ERROR = None
+except ImportError as exc:  # pragma: no cover - depends on local runtime
+    raise ImportError(
+        "缺少可视化依赖 matplotlib 或 seaborn。请先运行 pip install -r requirements.txt 后再生成图表。"
+    ) from exc
 
 from .data_generator import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum
 from .lighting_compensation import (
@@ -26,15 +23,7 @@ from .lighting_compensation import (
 )
 
 
-def _require_plotting() -> None:
-    if PLOT_IMPORT_ERROR is not None:
-        raise RuntimeError(
-            "缺少 matplotlib/seaborn。请先运行 pip install -r requirements.txt 后再生成图表。"
-        ) from PLOT_IMPORT_ERROR
-
-
 def configure_plot_style() -> None:
-    _require_plotting()
     sns.set_theme(style="whitegrid", context="notebook")
     plt.rcParams["font.sans-serif"] = [
         "Microsoft YaHei",
@@ -56,154 +45,7 @@ def save_figure(fig: plt.Figure, save_path: str | Path | None = None) -> plt.Fig
     return fig
 
 
-def _font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    candidates = [
-        Path("C:/Windows/Fonts/msyh.ttc"),
-        Path("C:/Windows/Fonts/simhei.ttf"),
-        Path("C:/Windows/Fonts/simsun.ttc"),
-    ]
-    for path in candidates:
-        if path.exists():
-            return ImageFont.truetype(str(path), size=size)
-    return ImageFont.load_default()
-
-
-def _draw_centered(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, font, fill="#222222") -> None:
-    bbox = draw.textbbox((0, 0), text, font=font)
-    width = bbox[2] - bbox[0]
-    draw.text((xy[0] - width // 2, xy[1]), text, font=font, fill=fill)
-
-
-def _line_points(
-    x_values: np.ndarray,
-    y_values: np.ndarray,
-    bounds: tuple[float, float, float, float],
-    plot_box: tuple[int, int, int, int],
-) -> list[tuple[int, int]]:
-    x_min, x_max, y_min, y_max = bounds
-    left, top, right, bottom = plot_box
-    x_span = max(x_max - x_min, 1e-9)
-    y_span = max(y_max - y_min, 1e-9)
-    points = []
-    for x, y in zip(x_values, y_values):
-        px = left + (float(x) - x_min) / x_span * (right - left)
-        py = bottom - (float(y) - y_min) / y_span * (bottom - top)
-        points.append((int(px), int(py)))
-    return points
-
-
-def _save_pillow_line_chart(
-    series: list[tuple[np.ndarray, np.ndarray, str, str]],
-    title: str,
-    save_path: str | Path,
-    x_label: str = "波长 / nm",
-    y_label: str = "相对强度",
-) -> None:
-    save_path = Path(save_path)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
-    width, height = 1100, 650
-    left, top, right, bottom = 95, 78, width - 40, height - 90
-    image = Image.new("RGB", (width, height), "white")
-    draw = ImageDraw.Draw(image)
-    title_font = _font(30)
-    label_font = _font(20)
-    tick_font = _font(17)
-    _draw_centered(draw, (width // 2, 22), title, title_font)
-
-    all_x = np.concatenate([item[0] for item in series])
-    all_y = np.concatenate([item[1] for item in series])
-    x_min, x_max = float(np.min(all_x)), float(np.max(all_x))
-    y_min = min(0.0, float(np.min(all_y)))
-    y_max = max(1.0, float(np.max(all_y)) * 1.08)
-    bounds = (x_min, x_max, y_min, y_max)
-
-    for i in range(6):
-        y = top + i * (bottom - top) / 5
-        draw.line((left, y, right, y), fill="#e6e8eb", width=1)
-        value = y_max - i * (y_max - y_min) / 5
-        draw.text((18, int(y) - 10), f"{value:.2f}", font=tick_font, fill="#555555")
-    draw.rectangle((left, top, right, bottom), outline="#333333", width=2)
-    draw.text(((left + right) // 2 - 42, height - 52), x_label, font=label_font, fill="#333333")
-    draw.text((10, top - 34), y_label, font=label_font, fill="#333333")
-
-    for x_tick in np.linspace(x_min, x_max, 5):
-        px = left + (x_tick - x_min) / max(x_max - x_min, 1e-9) * (right - left)
-        draw.text((int(px) - 24, bottom + 12), f"{x_tick:.0f}", font=tick_font, fill="#555555")
-
-    legend_x = right - 190
-    legend_y = top + 14
-    for idx, (x_values, y_values, label, color) in enumerate(series):
-        points = _line_points(np.asarray(x_values), np.asarray(y_values), bounds, (left, top, right, bottom))
-        if len(points) >= 2:
-            draw.line(points, fill=color, width=4, joint="curve")
-        y = legend_y + idx * 28
-        draw.line((legend_x, y + 9, legend_x + 34, y + 9), fill=color, width=4)
-        draw.text((legend_x + 42, y), label, font=tick_font, fill="#333333")
-    image.save(save_path)
-
-
-def _save_pillow_bar_chart(
-    labels: list[str],
-    values: np.ndarray,
-    title: str,
-    save_path: str | Path,
-    color: str = "#4c78a8",
-    horizontal: bool = False,
-) -> None:
-    save_path = Path(save_path)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
-    width, height = 1100, 650
-    image = Image.new("RGB", (width, height), "white")
-    draw = ImageDraw.Draw(image)
-    title_font = _font(30)
-    label_font = _font(18)
-    _draw_centered(draw, (width // 2, 22), title, title_font)
-    values = np.asarray(values, dtype=float)
-    max_value = max(float(values.max()) if len(values) else 1.0, 1e-9)
-
-    if horizontal:
-        left, top, right, bottom = 230, 85, width - 55, height - 55
-        gap = 12
-        bar_h = max(20, int((bottom - top - gap * (len(labels) - 1)) / max(len(labels), 1)))
-        for idx, (label, value) in enumerate(zip(labels, values)):
-            y0 = top + idx * (bar_h + gap)
-            y1 = y0 + bar_h
-            x1 = left + int((right - left) * value / max_value)
-            draw.text((18, y0 + bar_h // 2 - 10), label, font=label_font, fill="#333333")
-            draw.rectangle((left, y0, x1, y1), fill=color)
-            draw.text((x1 + 8, y0 + bar_h // 2 - 10), f"{value:.3f}", font=label_font, fill="#333333")
-    else:
-        left, top, right, bottom = 85, 85, width - 50, height - 120
-        gap = 18
-        bar_w = max(26, int((right - left - gap * (len(labels) - 1)) / max(len(labels), 1)))
-        draw.line((left, bottom, right, bottom), fill="#333333", width=2)
-        for idx, (label, value) in enumerate(zip(labels, values)):
-            x0 = left + idx * (bar_w + gap)
-            x1 = x0 + bar_w
-            y0 = bottom - int((bottom - top) * value / max_value)
-            draw.rectangle((x0, y0, x1, bottom), fill=color)
-            draw.text((x0, y0 - 24), f"{value:.3f}", font=label_font, fill="#333333")
-            draw.text((x0 - 8, bottom + 14), label, font=label_font, fill="#333333")
-    image.save(save_path)
-
-
 def plot_base_spectrum(base_df: pd.DataFrame, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_line_chart(
-            [
-                (
-                    base_df["wavelength_nm"].to_numpy(dtype=float),
-                    base_df["relative_intensity"].to_numpy(dtype=float),
-                    "标准日光",
-                    "#1f77b4",
-                )
-            ],
-            "标准日光基准光谱",
-            save_path,
-        )
-        return None
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8, 4.6))
     ax.plot(base_df["wavelength_nm"], base_df["relative_intensity"], color="#1f77b4", linewidth=2.4)
@@ -215,24 +57,6 @@ def plot_base_spectrum(base_df: pd.DataFrame, save_path: str | Path | None = Non
 
 
 def plot_weather_spectrum_compare(df: pd.DataFrame, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        colors = {"晴": "#e5a100", "多云": "#4c78a8", "阴": "#7f7f7f", "雨": "#3b6ea8"}
-        series = []
-        for weather in ["晴", "多云", "阴", "雨"]:
-            subset = df[df["weather"] == weather]
-            if not subset.empty:
-                series.append(
-                    (
-                        WAVELENGTHS,
-                        subset[SPECTRUM_COLUMNS].mean().to_numpy(dtype=float),
-                        weather,
-                        colors[weather],
-                    )
-                )
-        _save_pillow_line_chart(series, "不同天气下的平均相对光谱", save_path)
-        return None
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8.4, 4.8))
     palette = {
@@ -256,25 +80,6 @@ def plot_weather_spectrum_compare(df: pd.DataFrame, save_path: str | Path | None
 
 
 def plot_hourly_lux(df: pd.DataFrame, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        hourly = df.groupby("hour", as_index=False)["outdoor_lux"].mean()
-        _save_pillow_line_chart(
-            [
-                (
-                    hourly["hour"].to_numpy(dtype=float),
-                    hourly["outdoor_lux"].to_numpy(dtype=float),
-                    "平均照度",
-                    "#2f9e44",
-                )
-            ],
-            "一天内模拟室外照度变化",
-            save_path,
-            x_label="小时",
-            y_label="平均室外照度 / lux",
-        )
-        return None
     configure_plot_style()
     hourly = df.groupby("hour", as_index=False)["outdoor_lux"].mean()
     fig, ax = plt.subplots(figsize=(8.2, 4.4))
@@ -287,22 +92,6 @@ def plot_hourly_lux(df: pd.DataFrame, save_path: str | Path | None = None) -> pl
 
 
 def plot_pca_variance(pca: object, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        variance = np.asarray(pca.explained_variance_ratio_, dtype=float)
-        components = np.arange(1, len(variance) + 1)
-        _save_pillow_line_chart(
-            [
-                (components, variance, "单个主成分", "#6f4e9b"),
-                (components, np.cumsum(variance), "累计解释方差", "#d95f02"),
-            ],
-            "PCA 主成分解释方差",
-            save_path,
-            x_label="主成分编号",
-            y_label="解释方差比例",
-        )
-        return None
     configure_plot_style()
     variance = np.asarray(pca.explained_variance_ratio_, dtype=float)
     components = np.arange(1, len(variance) + 1)
@@ -319,17 +108,6 @@ def plot_pca_variance(pca: object, save_path: str | Path | None = None) -> plt.F
 
 
 def plot_model_compare(metrics: pd.DataFrame, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_bar_chart(
-            metrics["model"].astype(str).tolist(),
-            metrics["RMSE"].to_numpy(dtype=float),
-            "模型 RMSE 对比",
-            save_path,
-            color="#4c78a8",
-        )
-        return None
     configure_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.4))
     sns.barplot(data=metrics, x="model", y="RMSE", ax=axes[0], color="#4c78a8")
@@ -352,18 +130,6 @@ def plot_prediction_compare(
     pred_spectrum: np.ndarray,
     save_path: str | Path | None = None,
 ) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_line_chart(
-            [
-                (WAVELENGTHS, np.asarray(true_spectrum, dtype=float), "模拟真实光谱", "#1f77b4"),
-                (WAVELENGTHS, np.asarray(pred_spectrum, dtype=float), "模型预测光谱", "#d62728"),
-            ],
-            "预测光谱与模拟真实光谱对比",
-            save_path,
-        )
-        return None
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8.4, 4.8))
     ax.plot(WAVELENGTHS, true_spectrum, label="模拟真实光谱", linewidth=2.4, color="#1f77b4")
@@ -380,19 +146,6 @@ def plot_feature_importance(
     feature_importance: pd.DataFrame,
     save_path: str | Path | None = None,
 ) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        data = feature_importance.head(10).copy()
-        _save_pillow_bar_chart(
-            data["feature"].astype(str).tolist(),
-            data["importance"].to_numpy(dtype=float),
-            "随机森林特征重要性",
-            save_path,
-            color="#f28e2b",
-            horizontal=True,
-        )
-        return None
     configure_plot_style()
     data = feature_importance.head(10).copy()
     fig, ax = plt.subplots(figsize=(7.8, 4.6))
@@ -404,17 +157,6 @@ def plot_feature_importance(
 
 
 def plot_channel_weights(weights: np.ndarray, save_path: str | Path | None = None) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_bar_chart(
-            CHANNEL_NAMES,
-            np.asarray(weights, dtype=float),
-            "七通道 LED 补偿推荐比例",
-            save_path,
-            color="#4c78a8",
-        )
-        return None
     configure_plot_style()
     data = pd.DataFrame({"channel": CHANNEL_NAMES, "ratio": np.asarray(weights, dtype=float)})
     fig, ax = plt.subplots(figsize=(8.2, 4.4))
@@ -433,18 +175,6 @@ def plot_channel_contributions(
 ) -> plt.Figure:
     led_df = build_led_channels(WAVELENGTHS)
     contributions = led_df[CHANNEL_NAMES].to_numpy(dtype=float) * np.asarray(result.channel_weights, dtype=float)
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_line_chart(
-            [
-                (WAVELENGTHS, contributions[:, idx], channel, "#4c78a8")
-                for idx, channel in enumerate(CHANNEL_NAMES)
-            ],
-            "七通道 LED 光谱贡献分解",
-            save_path,
-        )
-        return None
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8.6, 4.9))
     palette = sns.color_palette("tab10", n_colors=len(CHANNEL_NAMES))
@@ -468,17 +198,6 @@ def plot_band_error_reduction(
     save_path: str | Path | None = None,
 ) -> plt.Figure:
     data = band_error_frame(result)
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_bar_chart(
-            data["波段"].astype(str).tolist(),
-            data["补偿后RMSE"].to_numpy(dtype=float),
-            "各波段补偿后误差",
-            save_path,
-            color="#59a14f",
-        )
-        return None
     configure_plot_style()
     plot_data = data.melt(
         id_vars="波段",
@@ -612,8 +331,6 @@ def plot_light_halo_comparison(
     result: CompensationResult,
     save_path: str | Path | None = None,
 ) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        _require_plotting()
     configure_plot_style()
     dual_white = dual_white_reference_spectrum(result)
     compensated_error = result.after_rmse
@@ -649,19 +366,6 @@ def plot_compensation_result(
     result: CompensationResult,
     save_path: str | Path | None = None,
 ) -> plt.Figure:
-    if PLOT_IMPORT_ERROR is not None:
-        if save_path is None:
-            _require_plotting()
-        _save_pillow_line_chart(
-            [
-                (WAVELENGTHS, result.target_spectrum, "目标光谱", "#111111"),
-                (WAVELENGTHS, result.current_spectrum, "当前自然光贡献", "#4c78a8"),
-                (WAVELENGTHS, result.compensated_spectrum, "补偿后合成光谱", "#2f9e44"),
-            ],
-            "室内照明补偿前后光谱对比",
-            save_path,
-        )
-        return None
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8.6, 4.9))
     ax.plot(WAVELENGTHS, result.target_spectrum, label="目标光谱", linewidth=2.4, color="#111111")
