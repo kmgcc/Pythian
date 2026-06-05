@@ -1,0 +1,3 @@
+﻿用途,来源,链接,说明
+实测 LED 光谱 CSV,"Harald Brendel, Spectral Power Distribution of LED",https://haraldbrendel.com/ledspd.html,29 个商业 LED 的实测 SPD，CSV 覆盖 350-700nm；本项目取蓝光泵浦和宽谱荧光粉型样本构造普通白光 LED 通道。
+双色温灯具结构参考,Bridgelux/L1C1 Vesta tunable white datasheet,https://www.digikey.com/en/htmldatasheets/production/3032525/0/0/1/l1cu-rng1000000000.html,公开 datasheet 展示 2700K 到 6500K 可调白 LED 的常见双通道结构和相对光谱形态。
