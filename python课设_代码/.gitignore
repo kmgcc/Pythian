@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+.codex_tmp_packages/
+.streamlit/secrets.toml
+.DS_Store
+*.bak
+* 2.py
+
+# Raw Zenodo datasets (auto-downloaded by real_data_pipeline.py)
+data/external/meta_location.csv
+data/external/meta_measurement_parameters.csv
+data/external/meta_sun_positions.csv
+data/external/meta_weather.csv
+data/external/spectral_horizontal_irradiance.csv
+
+# Weather API caches
+data/external/weather_cache/
