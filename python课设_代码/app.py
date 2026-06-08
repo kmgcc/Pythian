@@ -9,7 +9,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
-from src.data_generator import SCENE_TARGET_LUX, SPECTRUM_COLUMNS, WAVELENGTHS, solar_altitude_from_hour
+from src.spectrum_utils import SCENE_TARGET_LUX, SPECTRUM_COLUMNS, WAVELENGTHS, solar_altitude_from_hour
 from src.lighting_compensation import (
     band_error_frame,
     channel_recommendation_frame,

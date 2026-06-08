@@ -9,7 +9,7 @@ import pandas as pd
 warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
 import requests
 
-from .data_generator import WAVELENGTHS, gaussian, normalize_curve
+from .spectrum_utils import WAVELENGTHS, gaussian, normalize_curve
 
 
 MEASURED_LED_SPD_URL = "https://haraldbrendel.com/files/led_spd_350_700.csv"

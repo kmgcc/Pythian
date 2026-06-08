@@ -6,7 +6,7 @@ import pandas as pd
 # Add the project directory to sys.path so we can import src modules
 sys.path.append("/Users/kmg/Documents/vscode/Python 课程设计/python课设")
 
-from src.data_generator import create_base_spectrum, WAVELENGTHS
+from src.spectrum_utils import create_base_spectrum, WAVELENGTHS
 from src.lighting_compensation import compute_compensation
 from src.visualization import spectrum_to_srgb, plot_light_halo_comparison
 

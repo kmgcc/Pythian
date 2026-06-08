@@ -17,8 +17,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.tree import DecisionTreeRegressor
 
-from .data_generator import SPECTRUM_COLUMNS
-from .data_generator import normalize_curve
+from .spectrum_utils import SPECTRUM_COLUMNS, normalize_curve
 
 
 FEATURE_COLUMNS = [

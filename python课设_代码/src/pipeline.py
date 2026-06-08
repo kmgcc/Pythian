@@ -12,13 +12,7 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib。请先运行 pip install -r requirements.txt 后再运行流水线。"
     ) from exc
 
-from .data_generator import (
-    SPECTRUM_COLUMNS,
-    generate_dataset,
-    save_base_spectrum,
-    save_dataset,
-    save_sample_weather,
-)
+from .spectrum_utils import SPECTRUM_COLUMNS, create_base_spectrum, WAVELENGTHS
 from .led_spectrum_data import fetch_and_build_dual_white_spectrum, source_frame
 from .lighting_compensation import append_recommendations, band_error_frame, channel_recommendation_frame, compute_compensation
 from .spectrum_model import ModelTrainingResult, load_training_result, save_training_result, train_models
@@ -50,7 +44,6 @@ MODEL_PATH = MODEL_DIR / "spectrum_model.joblib"
 
 def artifacts_exist() -> bool:
     required = [
-        DATA_DIR / "base_spectrum.csv",
         DATA_DIR / "dual_white_led_spectrum.csv",
         DATASET_PATH,
         RESULT_DIR / "model_metrics.csv",
@@ -75,19 +68,18 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
     RESULT_DIR.mkdir(parents=True, exist_ok=True)
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    base_df = save_base_spectrum(DATA_DIR / "base_spectrum.csv")
     dual_white_df = fetch_and_build_dual_white_spectrum(DATA_DIR / "dual_white_led_spectrum.csv")
     source_frame().to_csv(DATA_DIR / "dual_white_led_sources.csv", index=False, encoding="utf-8-sig")
-    
+
     if not DATASET_PATH.exists():
         print("[Pipeline] Real spectrum-weather dataset not found. Running fetching/alignment pipeline...")
         from . import real_data_pipeline
         real_data_pipeline.main()
-        
+
     dataset = pd.read_csv(DATASET_PATH, encoding="utf-8-sig")
     dataset = append_recommendations(dataset)
-    save_dataset(dataset, DATASET_PATH)
-    save_sample_weather(dataset, DATA_DIR / "sample_weather.csv")
+    dataset.to_csv(DATASET_PATH, index=False, encoding="utf-8-sig")
+    dataset.to_csv(DATA_DIR / "sample_weather.csv", index=False, encoding="utf-8-sig")
 
     result = train_models(dataset, n_components=5, random_state=seed)
     save_training_result(result, MODEL_PATH)
@@ -134,7 +126,7 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
     )
 
     figures = [
-        plot_base_spectrum(base_df, FIGURE_DIR / "base_spectrum.png"),
+        plot_base_spectrum(pd.DataFrame({"wavelength_nm": WAVELENGTHS, "relative_intensity": create_base_spectrum()}), FIGURE_DIR / "base_spectrum.png"),
         plot_weather_spectrum_compare(dataset, FIGURE_DIR / "weather_spectrum_compare.png"),
         plot_hourly_lux(dataset, FIGURE_DIR / "hourly_lux.png"),
         plot_pca_variance(result.pca, FIGURE_DIR / "pca_variance.png"),

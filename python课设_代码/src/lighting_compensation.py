@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from .data_generator import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum, gaussian, normalize_curve
+from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum, gaussian, normalize_curve
 from .led_spectrum_data import load_dual_white_spectrum
 
 

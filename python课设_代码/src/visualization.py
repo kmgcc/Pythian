@@ -13,7 +13,7 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib 或 seaborn。请先运行 pip install -r requirements.txt 后再生成图表。"
     ) from exc
 
-from .data_generator import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum
+from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum
 from .lighting_compensation import (
     CHANNEL_NAMES,
     CompensationResult,
@@ -96,13 +96,23 @@ def plot_pca_variance(pca: object, save_path: str | Path | None = None) -> plt.F
     variance = np.asarray(pca.explained_variance_ratio_, dtype=float)
     components = np.arange(1, len(variance) + 1)
     fig, ax = plt.subplots(figsize=(7.8, 4.5))
-    ax.bar(components, variance, color="#6f4e9b", label="单个主成分")
+    bars = ax.bar(components, variance, color="#6f4e9b", label="单个主成分")
     ax.plot(components, np.cumsum(variance), marker="o", color="#d95f02", label="累计解释方差")
     ax.set_title("PCA 主成分解释方差")
     ax.set_xlabel("主成分编号")
     ax.set_ylabel("解释方差比例")
     ax.set_xticks(components)
-    ax.set_ylim(0, 1.05)
+    ax.set_yscale("log")
+    ax.set_ylim(max(variance.min() * 0.3, 1e-6), 1.05)
+    for bar, v in zip(bars, variance):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() * 1.3,
+            f"{v * 100:.2f}%" if v >= 0.001 else f"{v * 100:.3f}%",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+        )
     ax.legend()
     return save_figure(fig, save_path)
 

@@ -3,7 +3,7 @@ import numpy as np
 
 sys.path.append("/Users/kmg/Documents/vscode/Python 课程设计/python课设")
 
-from src.data_generator import create_base_spectrum, WAVELENGTHS, gaussian, normalize_curve
+from src.spectrum_utils import create_base_spectrum, WAVELENGTHS, gaussian, normalize_curve
 
 # Approximate CIE 1964 10-degree Color Matching Functions (Wyman et al. 2013)
 def _cie_gaussian(wavelengths: np.ndarray, center: float, left_scale: float, right_scale: float) -> np.ndarray:
