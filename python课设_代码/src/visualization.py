@@ -13,7 +13,7 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib 或 seaborn。请先运行 pip install -r requirements.txt 后再生成图表。"
     ) from exc
 
-from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum
+from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, natural_daylight_reference
 from .lighting_compensation import (
     CHANNEL_NAMES,
     CompensationResult,
@@ -49,7 +49,7 @@ def plot_base_spectrum(base_df: pd.DataFrame, save_path: str | Path | None = Non
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8, 4.6))
     ax.plot(base_df["wavelength_nm"], base_df["relative_intensity"], color="#1f77b4", linewidth=2.4)
-    ax.set_title("标准日光基准光谱")
+    ax.set_title("实测自然光基准光谱（晴天日光均值）")
     ax.set_xlabel("波长 / nm")
     ax.set_ylabel("相对强度")
     ax.set_ylim(0, 1.08)
@@ -264,8 +264,8 @@ def spectrum_to_srgb(spectrum: np.ndarray, wavelengths: np.ndarray | None = None
         ]
     )
     
-    # Base spectrum (AM1.5G, 5600K) XYZ calculation for white balance reference
-    base_spectrum = create_base_spectrum(wavelengths)
+    # Real measured natural-daylight reference XYZ for white-balance reference
+    base_spectrum = natural_daylight_reference(wavelengths)
     xyz_ref = np.array(
         [
             float(np.sum(base_spectrum * x_bar)),

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import datetime
+import re
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,8 +11,10 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from astral import Observer
+from astral.sun import elevation as solar_elevation
 
-from src.spectrum_utils import SCENE_TARGET_LUX, SPECTRUM_COLUMNS, WAVELENGTHS, solar_altitude_from_hour
+from src.spectrum_utils import SCENE_TARGET_LUX, SPECTRUM_COLUMNS, WAVELENGTHS, natural_daylight_reference
 from src.lighting_compensation import (
     band_error_frame,
     channel_recommendation_frame,
@@ -131,12 +136,72 @@ def cached_load():
     return load_or_train()
 
 
-def estimate_outdoor_lux(weather: str, cloud_cover: float, humidity: float, solar_altitude: float) -> float:
-    weather_transmission = {"晴": 1.00, "多云": 0.68, "阴": 0.42, "雨": 0.25}[weather]
-    altitude_factor = max(np.sin(np.deg2rad(max(solar_altitude, 0.0))), 0.0) ** 0.55
-    cloud_factor = 1.0 - 0.62 * cloud_cover
-    humidity_factor = 1.0 - 0.13 * humidity
-    return float(np.clip(105000 * altitude_factor * weather_transmission * cloud_factor * humidity_factor, 300, 115000))
+def _parse_coordinate(value: object) -> float:
+    text = str(value).strip()
+    match = re.match(r"^([\d.]+)\s*([NSEWnsew])$", text)
+    if match:
+        number = float(match.group(1))
+        return -number if match.group(2).upper() in ("S", "W") else number
+    return float(text)
+
+
+@st.cache_data(show_spinner=False)
+def load_stations() -> dict[str, dict[str, object]]:
+    """Load real observation stations (coordinates + timezone) from the downloaded metadata."""
+    path = Path(__file__).resolve().parent / "data/external/meta_location.csv"
+    meta = pd.read_csv(path)
+    stations: dict[str, dict[str, object]] = {}
+    for _, row in meta.iterrows():
+        stations[str(row["location_name"])] = {
+            "lat": _parse_coordinate(row["latitude"]),
+            "lon": _parse_coordinate(row["longitude"]),
+            "tz": str(row["timezone"]),
+        }
+    return stations
+
+
+def compute_solar_altitude(lat: float, lon: float, tz: str, date: datetime.date, hour: int) -> float:
+    """Real astronomical solar elevation (degrees) via astral for the given place/time."""
+    moment = datetime.datetime(date.year, date.month, date.day, int(hour), 0, tzinfo=ZoneInfo(tz))
+    altitude = solar_elevation(Observer(latitude=lat, longitude=lon), moment)
+    return float(max(altitude, 0.0))
+
+
+@st.cache_resource(show_spinner=False)
+def cached_outdoor_lux_model(_dataset: pd.DataFrame):
+    """Regression of real outdoor illuminance on real measured weather/solar features."""
+    from sklearn.ensemble import RandomForestRegressor
+
+    base_features = ["solar_altitude", "cloud_cover", "humidity", "precipitation"]
+    features = pd.concat(
+        [_dataset[base_features], pd.get_dummies(_dataset["weather"], prefix="w")], axis=1
+    )
+    target = _dataset["outdoor_lux"].to_numpy(dtype=float)
+    model = RandomForestRegressor(n_estimators=120, max_depth=16, random_state=42, n_jobs=-1)
+    model.fit(features, target)
+    return model, list(features.columns)
+
+
+def predict_outdoor_lux(
+    lux_model,
+    solar_altitude: float,
+    cloud_cover: float,
+    humidity: float,
+    precipitation: float,
+    weather: str,
+) -> float:
+    model, columns = lux_model
+    row = {
+        "solar_altitude": solar_altitude,
+        "cloud_cover": cloud_cover,
+        "humidity": humidity,
+        "precipitation": precipitation,
+    }
+    for column in columns:
+        if column.startswith("w_"):
+            row[column] = 1.0 if column == f"w_{weather}" else 0.0
+    features = pd.DataFrame([row])[columns]
+    return float(model.predict(features)[0])
 
 
 def find_test_sample(x_test, weather, target_hour):
@@ -282,16 +347,23 @@ with st.sidebar:
             
     st.divider()
 
+    stations = load_stations()
+    station_name = st.selectbox("观测地点", list(stations.keys()), key="env_station")
+    obs_date = st.date_input("日期", value=datetime.date(2016, 6, 21), key="env_date")
     weather = st.selectbox("天气状况", ["晴", "多云", "阴", "雨"], key="env_weather")
     hour = st.slider("时间 (小时)", min_value=6, max_value=18, step=1, key="env_hour")
     cloud_cover = st.slider("云量", min_value=0.0, max_value=1.0, step=0.01, key="env_cloud_cover")
     humidity = st.slider("环境湿度", min_value=0.2, max_value=1.0, step=0.01, key="env_humidity")
     temperature = st.slider("环境温度 / ℃", min_value=0.0, max_value=40.0, step=0.5, key="env_temperature")
     precipitation = st.slider("降水强度", min_value=0.0, max_value=1.0, step=0.01, key="env_precipitation")
-    
-    solar_altitude = solar_altitude_from_hour(hour)
-    outdoor_lux = estimate_outdoor_lux(weather, cloud_cover, humidity, solar_altitude)
-    
+
+    station = stations[station_name]
+    solar_altitude = compute_solar_altitude(station["lat"], station["lon"], station["tz"], obs_date, hour)
+    outdoor_lux = predict_outdoor_lux(
+        cached_outdoor_lux_model(dataset), solar_altitude, cloud_cover, humidity, precipitation, weather
+    )
+    st.caption(f"真实天文计算太阳高度角 {solar_altitude:.1f}° · 实测数据回归室外照度 {outdoor_lux:.0f} lux")
+
     st.divider()
     st.subheader("室内场景与照度")
     scene = st.selectbox("室内使用场景", list(SCENE_TARGET_LUX.keys()), index=0)
@@ -345,15 +417,14 @@ with tabs[0]:
         "sample_id",
         "date",
         "hour",
+        "city",
         "weather",
-        "scene",
         "solar_altitude",
         "cloud_cover",
         "humidity",
         "temperature",
         "precipitation",
         "outdoor_lux",
-        "target_lux",
     ]
     st.dataframe(dataset[preview_cols].head(15), use_container_width=True, hide_index=True)
 
@@ -390,14 +461,15 @@ with tabs[0]:
 with tabs[1]:
     st.subheader("日光光谱物理特性分析")
     
-    # Load standard solar spectrum from data folder
-    app_dir = Path(__file__).resolve().parent
-    base_spectrum_df = pd.read_csv(app_dir / "data/base_spectrum.csv")
+    # Real measured natural-daylight reference (averaged clear-sky spectra from the dataset)
+    base_spectrum_df = pd.DataFrame(
+        {"wavelength_nm": WAVELENGTHS, "relative_intensity": natural_daylight_reference()}
+    )
     fig = px.line(
         base_spectrum_df,
         x="wavelength_nm",
         y="relative_intensity",
-        title="标准太阳光相对光谱（AM1.5G 可见光区 380nm-780nm）",
+        title="实测自然光相对光谱（晴天日光均值，可见光区 380nm-780nm）",
         labels={"wavelength_nm": "波长 (nm)", "relative_intensity": "相对光谱强度"},
     )
     fig.update_traces(line=dict(color="#f9a825", width=3))

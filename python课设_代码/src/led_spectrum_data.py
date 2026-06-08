@@ -9,7 +9,7 @@ import pandas as pd
 warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
 import requests
 
-from .spectrum_utils import WAVELENGTHS, gaussian, normalize_curve
+from .spectrum_utils import WAVELENGTHS, normalize_curve
 
 
 MEASURED_LED_SPD_URL = "https://haraldbrendel.com/files/led_spd_350_700.csv"
@@ -45,16 +45,13 @@ def fetch_measured_led_spd(
     wavelengths = np.array([float(item) for item in first_line.split(",")], dtype=float)
     values = pd.read_csv(cache_path, comment="#", header=None)
     values.columns = [f"{int(wavelength)}nm" for wavelength in wavelengths]
-    values.insert(0, "sample_id", [f"measured_led_{index + 1:02d}" for index in range(len(values))])
-    values.insert(
-        1,
-        "peak_nm",
-        [
-            int(wavelengths[row.to_numpy(dtype=float).argmax()])
-            for _, row in values.drop(columns=["sample_id"]).iterrows()
-        ],
+    meta = pd.DataFrame(
+        {
+            "sample_id": [f"measured_led_{index + 1:02d}" for index in range(len(values))],
+            "peak_nm": [int(wavelengths[row.argmax()]) for row in values.to_numpy(dtype=float)],
+        }
     )
-    return values
+    return pd.concat([meta, values], axis=1)
 
 
 def _measured_row(df: pd.DataFrame, row_index: int) -> tuple[np.ndarray, np.ndarray]:
@@ -68,6 +65,63 @@ def _measured_row(df: pd.DataFrame, row_index: int) -> tuple[np.ndarray, np.ndar
 
 def _interp_to_project_grid(source_wavelengths: np.ndarray, source_values: np.ndarray) -> np.ndarray:
     return normalize_curve(np.interp(WAVELENGTHS, source_wavelengths, source_values, left=0.0, right=0.0))
+
+
+# Target peak wavelengths of the five narrow-band colour channels. Each is matched to
+# the nearest narrow measured LED in the downloaded Harald Brendel SPD dataset, so every
+# channel is backed by a real measured spectrum instead of a synthetic gaussian.
+COLOR_CHANNEL_TARGETS = {
+    "深蓝/蓝光": 445,
+    "青光": 500,
+    "绿光": 540,
+    "琥珀光": 595,
+    "红光": 635,
+}
+
+
+def _measured_peak_fwhm(wavelengths: np.ndarray, values: np.ndarray) -> tuple[float, float]:
+    peak = float(wavelengths[values.argmax()])
+    half = float(values.max()) / 2.0
+    above = wavelengths[values >= half]
+    fwhm = float(above.max() - above.min()) if above.size > 1 else 0.0
+    return peak, fwhm
+
+
+def select_measured_color_led(
+    measured_df: pd.DataFrame,
+    target_nm: float,
+    max_fwhm: float = 60.0,
+) -> np.ndarray:
+    """Pick the narrow-band measured LED whose peak is closest to ``target_nm``."""
+    best: tuple[float, np.ndarray, np.ndarray] | None = None
+    for row_index in range(len(measured_df)):
+        wavelengths, values = _measured_row(measured_df, row_index)
+        peak, fwhm = _measured_peak_fwhm(wavelengths, values)
+        if fwhm > max_fwhm:
+            continue
+        distance = abs(peak - target_nm)
+        if best is None or distance < best[0]:
+            best = (distance, wavelengths, values)
+    if best is None:
+        raise RuntimeError(f"实测 LED 数据集中找不到接近 {target_nm}nm 的窄带彩色 LED。")
+    _, src_wavelengths, src_values = best
+    return _interp_to_project_grid(src_wavelengths, src_values)
+
+
+def measured_color_channels(
+    wavelengths: np.ndarray | None = None,
+    force: bool = False,
+) -> dict[str, np.ndarray]:
+    """Return the five colour LED channels as real measured spectra on the project grid."""
+    target_grid = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths)
+    measured = fetch_measured_led_spd(force=force)
+    channels: dict[str, np.ndarray] = {}
+    for name, target_nm in COLOR_CHANNEL_TARGETS.items():
+        grid_spectrum = select_measured_color_led(measured, target_nm)
+        if wavelengths is not None:
+            grid_spectrum = normalize_curve(np.interp(target_grid, WAVELENGTHS, grid_spectrum))
+        channels[name] = grid_spectrum
+    return channels
 
 
 def build_dual_white_from_measured_leds(measured_df: pd.DataFrame) -> pd.DataFrame:
@@ -112,33 +166,20 @@ def fetch_and_build_dual_white_spectrum(
 
 def load_dual_white_spectrum(
     path: str | Path = DUAL_WHITE_SPECTRUM_PATH,
-    allow_download: bool = False,
+    allow_download: bool = True,
 ) -> pd.DataFrame:
+    """Return the dual-white LED channels, always derived from real measured SPD data.
+
+    If the cached CSV is missing, the warm/cool channels are rebuilt from the measured
+    LED dataset (downloaded on demand). There is no synthetic fallback.
+    """
     path = Path(path)
     if path.exists():
         return pd.read_csv(path, encoding="utf-8-sig")
     if allow_download:
         return fetch_and_build_dual_white_spectrum(path)
-    measured = fetch_measured_led_spd(force=False) if RAW_LED_SPD_PATH.exists() else None
-    if measured is not None:
-        return build_dual_white_from_measured_leds(measured)
-    warm = normalize_curve(
-        0.08 * gaussian(WAVELENGTHS, 450, 20)
-        + 0.55 * gaussian(WAVELENGTHS, 595, 90)
-        + 0.20 * gaussian(WAVELENGTHS, 545, 82)
-    )
-    cool = normalize_curve(
-        1.2 * gaussian(WAVELENGTHS, 452, 20)
-        + 0.4 * gaussian(WAVELENGTHS, 548, 90)
-        + 0.05 * gaussian(WAVELENGTHS, 610, 118)
-    )
-    return pd.DataFrame(
-        {
-            "wavelength_nm": WAVELENGTHS,
-            "warm_2700k": warm,
-            "cool_6500k": cool,
-        }
-    )
+    measured = fetch_measured_led_spd(force=False)
+    return build_dual_white_from_measured_leds(measured)
 
 
 def source_frame(force: bool = False) -> pd.DataFrame:

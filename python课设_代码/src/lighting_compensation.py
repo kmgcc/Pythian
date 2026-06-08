@@ -5,8 +5,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, create_base_spectrum, gaussian, normalize_curve
-from .led_spectrum_data import load_dual_white_spectrum
+from .spectrum_utils import WAVELENGTHS, natural_daylight_reference, normalize_curve
+from .led_spectrum_data import load_dual_white_spectrum, measured_color_channels
 
 
 CHANNEL_NAMES = [
@@ -18,7 +18,6 @@ CHANNEL_NAMES = [
     "暖白",
     "冷白",
 ]
-RECOMMENDATION_COLUMNS = [f"recommended_channel_{i}" for i in range(1, 8)]
 CHANNEL_PEAK_NM = [445, 500, 540, 595, 635, 560, 505]
 CHANNEL_ROLES = [
     "补足短波蓝光，影响清醒度和冷感",
@@ -64,56 +63,43 @@ def phosphor_white_led_spectrum(
     cct: int,
     wavelengths: np.ndarray | None = None,
 ) -> np.ndarray:
-    """Return cached measured-data-derived dual-white spectra, with a local fallback."""
+    """Return a measured-data-derived warm/cool white LED spectrum (no synthetic fallback)."""
     wavelengths = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths)
-    dual_white = load_dual_white_spectrum(allow_download=False)
-    column = "warm_2700k" if cct <= 3000 else "cool_6500k"
-    if column in dual_white.columns and "wavelength_nm" in dual_white.columns:
-        return normalize_curve(
-            np.interp(
-                wavelengths,
-                dual_white["wavelength_nm"].to_numpy(dtype=float),
-                dual_white[column].to_numpy(dtype=float),
-                left=0.0,
-                right=0.0,
-            )
-        )
-
+    dual_white = load_dual_white_spectrum()
     if cct <= 3000:
-        spectrum = (
-            0.22 * gaussian(wavelengths, 450, 18)
-            + 0.70 * gaussian(wavelengths, 610, 86)
-            + 0.30 * gaussian(wavelengths, 545, 74)
-            + 0.16 * gaussian(wavelengths, 680, 76)
-        )
+        column = "warm_2700k"
     elif cct >= 6000:
-        spectrum = (
-            0.82 * gaussian(wavelengths, 452, 18)
-            + 0.58 * gaussian(wavelengths, 545, 82)
-            + 0.30 * gaussian(wavelengths, 610, 110)
-            + 0.10 * gaussian(wavelengths, 690, 92)
-        )
+        column = "cool_6500k"
     else:
         ratio = (float(cct) - 2700.0) / (6500.0 - 2700.0)
         warm = phosphor_white_led_spectrum(2700, wavelengths)
         cool = phosphor_white_led_spectrum(6500, wavelengths)
-        spectrum = (1.0 - ratio) * warm + ratio * cool
-    return normalize_curve(spectrum)
+        return normalize_curve((1.0 - ratio) * warm + ratio * cool)
+
+    if column not in dual_white.columns or "wavelength_nm" not in dual_white.columns:
+        raise RuntimeError("实测双色温 LED 光谱缺少所需列，请重新运行下载流水线。")
+    return normalize_curve(
+        np.interp(
+            wavelengths,
+            dual_white["wavelength_nm"].to_numpy(dtype=float),
+            dual_white[column].to_numpy(dtype=float),
+            left=0.0,
+            right=0.0,
+        )
+    )
 
 
 def build_led_channels(wavelengths: np.ndarray | None = None) -> pd.DataFrame:
+    """Build the seven LED channels from real measured SPD data only.
+
+    The five colour channels are matched to the nearest narrow-band measured LED in the
+    downloaded Harald Brendel dataset; the warm/cool white channels come from the measured
+    dual-white spectra. No channel is synthesised.
+    """
     wavelengths = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths)
-    warm_white = phosphor_white_led_spectrum(2700, wavelengths)
-    cool_white = phosphor_white_led_spectrum(6500, wavelengths)
-    spectra = {
-        "深蓝/蓝光": gaussian(wavelengths, 445, 20),
-        "青光": gaussian(wavelengths, 500, 24),
-        "绿光": gaussian(wavelengths, 540, 26),
-        "琥珀光": gaussian(wavelengths, 595, 30),
-        "红光": gaussian(wavelengths, 635, 34),
-        "暖白": warm_white,
-        "冷白": cool_white,
-    }
+    spectra = dict(measured_color_channels(wavelengths))
+    spectra["暖白"] = phosphor_white_led_spectrum(2700, wavelengths)
+    spectra["冷白"] = phosphor_white_led_spectrum(6500, wavelengths)
     data = {"wavelength_nm": wavelengths}
     for name in CHANNEL_NAMES:
         data[name] = normalize_curve(spectra[name])
@@ -121,19 +107,14 @@ def build_led_channels(wavelengths: np.ndarray | None = None) -> pd.DataFrame:
 
 
 def scene_target_spectrum(scene: str = "学习", wavelengths: np.ndarray | None = None) -> np.ndarray:
+    """Compensation target = real measured natural daylight reference.
+
+    The goal of the system is to restore indoor light toward natural daylight, so the
+    target spectral shape is the measured clear-sky daylight reference for every scene.
+    The scene only governs the target illuminance (lux), not a synthetic spectral tweak.
+    """
     wavelengths = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths)
-    base = create_base_spectrum(wavelengths)
-    if scene == "休息":
-        target = base * (1 - 0.24 * gaussian(wavelengths, 450, 110))
-        target *= 1 + 0.10 * gaussian(wavelengths, 630, 130)
-    elif scene == "阅读":
-        target = base * (1 - 0.08 * gaussian(wavelengths, 440, 95))
-        target *= 1 + 0.04 * gaussian(wavelengths, 600, 160)
-    elif scene == "办公":
-        target = base * (1 + 0.04 * gaussian(wavelengths, 500, 120))
-    else:
-        target = base * (1 + 0.09 * gaussian(wavelengths, 470, 105))
-    return normalize_curve(target)
+    return natural_daylight_reference(wavelengths)
 
 
 def _solve_nonnegative_least_squares(
@@ -219,26 +200,6 @@ def dual_white_reference_spectrum(result: CompensationResult, wavelengths: np.nd
     demand = np.clip(result.target_spectrum - result.current_spectrum, 0.0, None)
     weights = _solve_nonnegative_least_squares(white_matrix, demand)
     return result.current_spectrum + white_matrix @ weights
-
-
-def append_recommendations(df: pd.DataFrame) -> pd.DataFrame:
-    """Add seven LED recommendation columns to a simulated dataset."""
-    result = df.copy()
-    weights_list: list[np.ndarray] = []
-    for _, row in result.iterrows():
-        spectrum = row[SPECTRUM_COLUMNS].to_numpy(dtype=float)
-        compensation = compute_compensation(
-            current_spectrum=spectrum,
-            scene=str(row.get("scene", "学习")),
-            target_lux=float(row.get("target_lux", 500)),
-            outdoor_lux=float(row.get("outdoor_lux", 20000)),
-        )
-        weights_list.append(compensation.channel_weights)
-
-    weights_array = np.vstack(weights_list)
-    for idx, column in enumerate(RECOMMENDATION_COLUMNS):
-        result[column] = np.round(weights_array[:, idx], 4)
-    return result
 
 
 def channel_recommendation_frame(weights: np.ndarray) -> pd.DataFrame:

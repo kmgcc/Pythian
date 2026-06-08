@@ -12,9 +12,9 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib。请先运行 pip install -r requirements.txt 后再运行流水线。"
     ) from exc
 
-from .spectrum_utils import SPECTRUM_COLUMNS, create_base_spectrum, WAVELENGTHS
+from .spectrum_utils import natural_daylight_reference, WAVELENGTHS
 from .led_spectrum_data import fetch_and_build_dual_white_spectrum, source_frame
-from .lighting_compensation import append_recommendations, band_error_frame, channel_recommendation_frame, compute_compensation
+from .lighting_compensation import band_error_frame, channel_recommendation_frame, compute_compensation
 from .spectrum_model import ModelTrainingResult, load_training_result, save_training_result, train_models
 from .visualization import (
     light_color_comparison_frame,
@@ -77,9 +77,6 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
         real_data_pipeline.main()
 
     dataset = pd.read_csv(DATASET_PATH, encoding="utf-8-sig")
-    dataset = append_recommendations(dataset)
-    dataset.to_csv(DATASET_PATH, index=False, encoding="utf-8-sig")
-    dataset.to_csv(DATA_DIR / "sample_weather.csv", index=False, encoding="utf-8-sig")
 
     result = train_models(dataset, n_components=5, random_state=seed)
     save_training_result(result, MODEL_PATH)
@@ -126,7 +123,7 @@ def run_full_pipeline(n_samples: int = 1800, seed: int = 42) -> tuple[pd.DataFra
     )
 
     figures = [
-        plot_base_spectrum(pd.DataFrame({"wavelength_nm": WAVELENGTHS, "relative_intensity": create_base_spectrum()}), FIGURE_DIR / "base_spectrum.png"),
+        plot_base_spectrum(pd.DataFrame({"wavelength_nm": WAVELENGTHS, "relative_intensity": natural_daylight_reference()}), FIGURE_DIR / "base_spectrum.png"),
         plot_weather_spectrum_compare(dataset, FIGURE_DIR / "weather_spectrum_compare.png"),
         plot_hourly_lux(dataset, FIGURE_DIR / "hourly_lux.png"),
         plot_pca_variance(result.pca, FIGURE_DIR / "pca_variance.png"),

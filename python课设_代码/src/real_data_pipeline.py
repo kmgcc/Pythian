@@ -32,15 +32,6 @@ FILES_TO_DOWNLOAD = [
     "spectral_horizontal_irradiance.csv",
 ]
 
-SCENE_PROBABILITY = [0.36, 0.30, 0.22, 0.12]
-SCENES = ["学习", "阅读", "办公", "休息"]
-SCENE_TARGET_LUX = {
-    "学习": 500,
-    "阅读": 400,
-    "办公": 450,
-    "休息": 180,
-}
-
 WAVELENGTHS = np.arange(380, 781, 10)
 SPECTRUM_COLUMNS = [f"wavelength_{w}" for w in WAVELENGTHS]
 
@@ -285,14 +276,10 @@ def main():
             return "阴"
             
     final_df["weather"] = final_df.apply(map_weather_class, axis=1)
-    
-    # 2. Add scene categories and target lux
-    print("  Assigning target indoor scenes and illuminance goals...")
-    rng = np.random.default_rng(42)  # Seed for reproducibility
-    scene_choices = rng.choice(SCENES, size=len(final_df), p=SCENE_PROBABILITY)
-    final_df["scene"] = scene_choices
-    final_df["target_lux"] = final_df["scene"].map(SCENE_TARGET_LUX)
-    
+
+    # Indoor scene / target illuminance are user-selected at the compensation stage,
+    # not fabricated here, so no synthetic scene labels are attached to the dataset.
+
     # 3. Standardize column names to maintain downstream compatibility
     city_map = {
         "CN-PKX": "北京",
@@ -330,8 +317,6 @@ def main():
         "solar_altitude",
         "outdoor_lux",
         *SPECTRUM_COLUMNS,
-        "scene",
-        "target_lux",
     ]
     final_output = final_df[final_cols]
     
