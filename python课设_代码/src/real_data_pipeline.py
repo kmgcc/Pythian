@@ -257,7 +257,7 @@ def main():
             
     # Align weather by merging nearest hour
     print("  Aligning hourly weather data to 10-minute measurements...")
-    merged["nearest_hour"] = merged["datetime_local"].dt.round("H")
+    merged["nearest_hour"] = merged["datetime_local"].dt.round("h")
     
     all_weather_df = pd.concat(weather_data_by_loc.values(), ignore_index=True)
     all_weather_df["time"] = pd.to_datetime(all_weather_df["time"])
