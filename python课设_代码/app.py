@@ -440,8 +440,19 @@ with tabs[2]:
     
     c1, c2 = st.columns([0.9, 1.1])
     with c1:
+        text_labels = [
+            f"{v * 100:.2f}%" if v >= 0.001 else f"{v * 100:.3f}%"
+            for v in explained_variance
+        ]
         fig = go.Figure()
-        fig.add_bar(x=components, y=explained_variance, name="单个主成分方差占比", marker_color="#6f4e9b")
+        fig.add_bar(
+            x=components,
+            y=explained_variance,
+            name="单个主成分方差占比",
+            marker_color="#6f4e9b",
+            text=text_labels,
+            textposition="outside",
+        )
         fig.add_trace(
             go.Scatter(
                 x=components,
@@ -453,8 +464,12 @@ with tabs[2]:
         )
         fig.update_layout(
             title="PCA 主成分提取解释方差",
-            yaxis_title="方差占比",
-            height=380,
+            yaxis=dict(
+                type="log",
+                title="方差占比 (对数刻度)",
+                range=[np.log10(max(explained_variance.min() * 0.3, 1e-6)), 0],
+            ),
+            height=400,
             margin=dict(l=20, r=20, t=60, b=20),
             legend_title_text="",
         )
