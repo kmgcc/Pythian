@@ -39,19 +39,10 @@ pip install -r requirements.txt
 
 ## 一键生成数据、模型和图表
 
-```bash
-python run_pipeline.py
-```
-
-可选参数：
-
-```bash
-python run_pipeline.py --samples 1800 --seed 42
-```
+打开 `main.ipynb` 并按顺序运行全部 Cell，即可生成数据集、训练模型并导出所有图表和结果。
 
 运行后会生成：
 
-- `data/base_spectrum.csv`
 - `data/real_spectrum_weather_dataset.csv`
 - `data/sample_weather.csv`
 - `models/spectrum_model.joblib`
@@ -94,7 +85,6 @@ streamlit run app.py
 .
 ├── app.py
 ├── main.ipynb
-├── run_pipeline.py
 ├── requirements.txt
 ├── README.md
 ├── data/
@@ -103,7 +93,7 @@ streamlit run app.py
 │   ├── figures/
 │   └── results/
 └── src/
-    ├── data_generator.py
+    ├── spectrum_utils.py
     ├── lighting_compensation.py
     ├── pipeline.py
     ├── spectrum_model.py

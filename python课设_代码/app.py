@@ -158,7 +158,7 @@ try:
         dataset, model_result = cached_load()
 except Exception as exc:
     st.error("项目依赖或模型文件尚未准备好。")
-    st.code("pip install -r requirements.txt\npython run_pipeline.py\nstreamlit run app.py", language="bash")
+    st.code("pip install -r requirements.txt\njupyter notebook main.ipynb\nstreamlit run app.py", language="bash")
     st.exception(exc)
     st.stop()
 
