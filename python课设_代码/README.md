@@ -1,106 +1,102 @@
-# 基于机器学习的自然光相对光谱预测与室内照明补偿设计
+# 基于真实天光数据的自然光光谱估计与室内照明补偿设计
 
-这是 Python 课程设计的代码部分，实现了计划书中的完整流程：
+Python 课程设计代码部分。本项目面向未来高质量室内照明需求，使用公开实测天光光谱数据，结合天气、时间、地点、太阳位置等低成本环境特征，训练机器学习模型估计自然光相对光谱，并进一步用于室内照明补偿设计。
 
-- 包含 380nm-780nm、每 10nm 一个采样点的真实公开实测天光光谱数据集；
-- 使用 SKYSPECTRA 公开实测光谱，并结合其自带元数据和历史天气 API 补充的天气、时间、太阳高度角、云量、湿度、室外照度等特征构建对齐样本；
-- 使用 PCA 将 41 维光谱降到 5 个主成分；
-- 对比 Linear Regression、KNN、Decision Tree、Random Forest 回归模型；
-- 使用 MAE、RMSE、R² 评价模型；
-- 将预测 PCA 系数还原为完整光谱曲线；
-- 根据目标光谱计算七通道 LED 室内照明补偿比例；
-- 输出 Notebook、Streamlit 页面、CSV 数据、模型结果和图表。
+整条流程：
 
-## 运行环境
+> 环境特征 → 模型预测 PCA 主成分系数 → PCA 逆变换 → 380nm-780nm 相对光谱 → 与目标光谱对比 → 七通道 LED 补偿比例 → 补偿前后误差
 
-建议使用 Python 3.10 及以上版本。
+本项目不试图完整解决真实建筑照明中的复杂问题，而是从课程设计角度出发，验证"低成本环境特征 → 自然光光谱估计 → 照明补偿"这条流程的可行性。
 
-课程要求的核心依赖安装命令：
+## 数据来源
+
+全部数据为公开真实数据，由 Python 代码联网获取并本地缓存：
+
+| 数据 | 来源 | 用途 |
+| --- | --- | --- |
+| 实测天光光谱及元数据 | SKYSPECTRA 数据集（[Zenodo record 8147546](https://zenodo.org/records/8147546)） | 光谱标签、地点、时间、太阳位置、室外照度、天空状况 |
+| 历史小时天气 | [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | 云量、湿度、温度、降水 |
+| 实测 LED 光谱 | [Harald Brendel LED SPD 数据](https://haraldbrendel.com/ledspd.html) | 补偿用七通道 LED 光谱 |
+
+最终数据集 `data/real_spectrum_weather_dataset.csv`：5664 行 × 58 列，光谱统一为 380nm-780nm、每 10nm 一点（41 维，列名 `wavelength_380` ~ `wavelength_780`）。
+
+说明：天气数据为按地点和时间对齐的历史天气特征，不等同于现场同步气象测量。
+
+## 安装依赖
+
+建议 Python 3.10 及以上：
 
 ```bash
-pip install numpy pandas matplotlib seaborn scikit-learn
+pip install numpy pandas matplotlib seaborn scikit-learn streamlit requests
 ```
 
-核心依赖包括：
-
-- numpy
-- pandas
-- matplotlib
-- seaborn
-- scikit-learn
-
-完整演示环境还需要 Streamlit、Notebook、Requests、Joblib 等辅助依赖，推荐直接安装：
+或直接安装完整依赖（含 Notebook 环境）：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-项目正式可视化统一使用 matplotlib，必要时使用 seaborn；如果运行环境缺少 matplotlib 或 seaborn，请先安装依赖后再生成图表。
+## 运行方式
 
-## 一键生成数据、模型和图表
+**一键流水线**（数据下载 → 预处理 → PCA → 五模型训练 → 评价 → 图表导出），可用于最终检查：
 
-打开 `main.ipynb` 并按顺序运行全部 Cell，即可生成数据集、训练模型并导出所有图表和结果。
+```bash
+python -m src.pipeline
+```
 
-运行后会生成：
-
-- `data/real_spectrum_weather_dataset.csv`
-- `data/sample_weather.csv`
-- `models/spectrum_model.joblib`
-- `outputs/results/model_metrics.csv`
-- `outputs/results/pca_variance.csv`
-- `outputs/results/feature_importance.csv`
-- `outputs/figures/*.png`
-
-说明：正式实验流程使用 `scikit-learn` 的标准实现完成 PCA、训练集/测试集划分、特征预处理、回归建模和模型评价。
-
-## Notebook 演示
-
-打开并按顺序运行：
+**Notebook 演示**（推荐，7 个章节分步展示完整流程）：
 
 ```bash
 jupyter notebook main.ipynb
 ```
 
-Notebook 包含数据预览、光谱图、PCA 解释方差、模型对比、预测光谱与照明补偿结果。
-
-## Streamlit 可视化页面
+**Streamlit 演示看板**（5 个板块：数据概览 / 光谱 PCA / 模型对比 / 光谱预测 / 照明补偿）：
 
 ```bash
 streamlit run app.py
 ```
 
-页面包含：
-
-- 数据集预览；
-- 不同天气下的光谱对比；
-- PCA 主成分解释方差；
-- 多模型评价指标；
-- 输入天气条件后的光谱预测；
-- 七通道 LED 补偿比例；
-- 目标光谱、当前自然光贡献和补偿后光谱对比。
+首次运行会自动下载数据并训练模型（光谱原始文件约 78MB，需要网络）；之后均使用本地缓存。
 
 ## 项目结构
 
 ```text
 .
-├── app.py
-├── main.ipynb
+├── main.ipynb              # 7 章节流程演示
+├── app.py                  # Streamlit 五板块看板
 ├── requirements.txt
-├── README.md
-├── data/
-├── models/
+├── data/                   # 数据集与外部原始数据缓存
+├── models/                 # 训练结果 (joblib)
 ├── outputs/
-│   ├── figures/
-│   └── results/
+│   ├── figures/            # 导出图表
+│   └── results/            # 指标与结果 CSV
 └── src/
-    ├── spectrum_utils.py
-    ├── lighting_compensation.py
-    ├── pipeline.py
-    ├── spectrum_model.py
-    ├── visualization.py
-    └── weather_api.py
+    ├── real_data_pipeline.py   # 真实数据下载、清洗、合并、天气对齐、重采样
+    ├── weather_api.py          # Open-Meteo 历史天气（带缓存）
+    ├── data_loader.py          # 数据集读取与信息汇总
+    ├── preprocessing.py        # 特征工程：独热编码、标准化、相对光谱归一化
+    ├── spectrum_pca.py         # 光谱 PCA 降维与还原
+    ├── model_training.py       # 五模型训练（含 MLP）、计时、最佳模型封装
+    ├── evaluation.py           # MAE/RMSE/R²/时间 统一评价
+    ├── led_spectrum_data.py    # 实测 LED 光谱获取与通道构建
+    ├── lighting_compensation.py # 七通道 LED 补偿算法
+    ├── visualization.py        # matplotlib/seaborn 图表
+    └── pipeline.py             # 一键编排
 ```
 
-## 说明
+## 输出结果
 
-本项目使用的是 SKYSPECTRA 公开实测天光光谱数据作为主要数据来源，并结合其自带的元数据与 Open-Meteo 历史天气 API 补充的天气特征，构建自然光相对光谱预测数据集。天气数据为按测量地点和时间对齐的历史天气特征，可能与现场瞬时天气存在一定差异。本项目的 LED 补偿也属于算法演示方案，未接入真实硬件。
+运行流水线后生成：
+
+- `data/real_spectrum_weather_dataset.csv` —— 最终建模数据集
+- `models/spectrum_model.joblib` —— 训练结果（含最佳模型与 PCA）
+- `outputs/results/model_metrics.csv` —— 五模型指标表（MAE/RMSE/R²/训练时间/预测时间）
+- `outputs/results/pca_variance.csv` —— PCA 解释方差
+- `outputs/results/feature_importance.csv` —— 随机森林特征重要性
+- `outputs/figures/*.png` —— 全部图表
+
+## 注意事项
+
+- 模型为相对光谱估计（每条光谱按自身最大值归一化），不预测绝对辐照强度；
+- 模型估计不能替代现场光谱仪实测，LED 补偿为算法演示，未接入真实硬件；
+- 若 Zenodo 或 Open-Meteo 请求失败，流水线会给出明确报错并中止，不会用伪造数据顶替，请检查网络后重试。
