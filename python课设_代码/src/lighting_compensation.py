@@ -191,15 +191,56 @@ def compute_compensation(
     )
 
 
-def dual_white_reference_spectrum(result: CompensationResult, wavelengths: np.ndarray | None = None) -> np.ndarray:
-    """Simulate a conventional brightness + warm/cool white control baseline."""
+@dataclass
+class DualCCTResult:
+    """传统双色温 LED 对照方案：色温旋钮 warm_ratio + 亮度旋钮 gain。"""
+
+    warm_ratio: float       # 暖白占比 a，混光 = a*暖白 + (1-a)*冷白
+    gain: float             # 整体亮度系数
+    led_spectrum: np.ndarray        # 双色温 LED 自身的混光光谱（含 gain）
+    combined_spectrum: np.ndarray   # 自然光 + 双色温混光后的合成光谱
+    rmse: float             # 合成光谱与目标光谱的 RMSE
+    mae: float
+
+
+def dual_cct_baseline(
+    current_spectrum: np.ndarray,
+    target_spectrum: np.ndarray,
+    wavelengths: np.ndarray | None = None,
+    n_steps: int = 101,
+) -> DualCCTResult:
+    """求传统双色温 LED 的最优方案，作为多通道补偿的对照。
+
+    市面常见的双色温灯具只有两个旋钮：冷暖配比和亮度。这里把混光写成
+    gain * (a*暖白 + (1-a)*冷白)，在 a∈[0,1] 上网格搜索；给定 a 时
+    最优 gain 有最小二乘闭式解（截断到非负）。目标与多通道补偿一致：
+    自然光 + LED 混光尽量接近目标光谱，保证两种方案在同一规则下比较。
+    """
     wavelengths = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths)
+    current = np.asarray(current_spectrum, dtype=float)
+    target = np.asarray(target_spectrum, dtype=float)
     warm_white = phosphor_white_led_spectrum(2700, wavelengths)
     cool_white = phosphor_white_led_spectrum(6500, wavelengths)
-    white_matrix = np.column_stack([warm_white, cool_white])
-    demand = np.clip(result.target_spectrum - result.current_spectrum, 0.0, None)
-    weights = _solve_nonnegative_least_squares(white_matrix, demand)
-    return result.current_spectrum + white_matrix @ weights
+    demand = target - current
+
+    best: DualCCTResult | None = None
+    for ratio in np.linspace(0.0, 1.0, n_steps):
+        mix = ratio * warm_white + (1.0 - ratio) * cool_white
+        denom = float(mix @ mix)
+        gain = max(0.0, float(mix @ demand) / denom) if denom > 1e-12 else 0.0
+        combined = current + gain * mix
+        rmse = float(np.sqrt(np.mean((target - combined) ** 2)))
+        if best is None or rmse < best.rmse:
+            best = DualCCTResult(
+                warm_ratio=float(ratio),
+                gain=gain,
+                led_spectrum=gain * mix,
+                combined_spectrum=combined,
+                rmse=rmse,
+                mae=float(np.mean(np.abs(target - combined))),
+            )
+    assert best is not None
+    return best
 
 
 def channel_recommendation_frame(weights: np.ndarray) -> pd.DataFrame:

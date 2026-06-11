@@ -22,6 +22,12 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib。请先运行 pip install -r requirements.txt 后再运行流水线。"
     ) from exc
 
+from .application_demo import (
+    color_preview_frame,
+    preset_summary_frame,
+    run_application_demo,
+)
+from .color_conversion import ensure_cmf_file
 from .data_loader import DATASET_PATH, load_dataset
 from .evaluation import build_metrics_table, select_best_model
 from .led_spectrum_data import fetch_and_build_dual_white_spectrum
@@ -40,15 +46,15 @@ from .preprocessing import FEATURE_COLUMNS, extract_features_targets, split_data
 from .spectrum_pca import SpectrumPCA
 from .spectrum_utils import WAVELENGTHS, natural_daylight_reference
 from .visualization import (
-    light_color_comparison_frame,
+    plot_application_spectra,
     plot_band_error_reduction,
     plot_base_spectrum,
     plot_channel_contributions,
     plot_channel_weights,
+    plot_color_circles,
     plot_compensation_result,
     plot_feature_importance,
     plot_hourly_lux,
-    plot_light_halo_comparison,
     plot_model_compare,
     plot_pca_variance,
     plot_prediction_compare,
@@ -145,6 +151,7 @@ def run_full_pipeline(random_state: int = 42) -> tuple[pd.DataFrame, PipelineRes
         real_data_pipeline.main()
     dataset = load_dataset()
     fetch_and_build_dual_white_spectrum(DATA_DIR / "dual_white_led_spectrum.csv")
+    ensure_cmf_file()  # 应用演示的近似色度预览需要 CIE 2015 观察者数据
 
     # 第 2 步：预处理 + PCA + 五模型训练与评价
     result = train_and_evaluate(dataset, random_state=random_state)
@@ -176,11 +183,17 @@ def run_full_pipeline(random_state: int = 42) -> tuple[pd.DataFrame, PipelineRes
     band_error_frame(compensation).to_csv(
         RESULT_DIR / "sample_band_error.csv", index=False, encoding="utf-8-sig"
     )
-    light_color_comparison_frame(compensation).to_csv(
-        RESULT_DIR / "sample_light_color_compare.csv", index=False, encoding="utf-8-sig"
+
+    # 第 5 步：应用环境演示（四个天气预设 + 晴天中午的详细对比）
+    demo = run_application_demo(result.predictor, dataset, preset="晴天中午")
+    preset_summary_frame(result.predictor, dataset).to_csv(
+        RESULT_DIR / "application_preset_summary.csv", index=False, encoding="utf-8-sig"
+    )
+    color_preview_frame(demo).to_csv(
+        RESULT_DIR / "application_color_preview.csv", index=False, encoding="utf-8-sig"
     )
 
-    # 第 5 步：导出全部图表
+    # 第 6 步：导出全部图表
     figures = [
         plot_base_spectrum(
             pd.DataFrame({"wavelength_nm": WAVELENGTHS, "relative_intensity": natural_daylight_reference()}),
@@ -195,8 +208,9 @@ def run_full_pipeline(random_state: int = 42) -> tuple[pd.DataFrame, PipelineRes
         plot_channel_weights(compensation.channel_weights, FIGURE_DIR / "led_channel_weights.png"),
         plot_channel_contributions(compensation, FIGURE_DIR / "led_channel_contributions.png"),
         plot_band_error_reduction(compensation, FIGURE_DIR / "band_error_reduction.png"),
-        plot_light_halo_comparison(compensation, FIGURE_DIR / "light_halo_comparison.png"),
         plot_compensation_result(compensation, FIGURE_DIR / "compensation_result.png"),
+        plot_application_spectra(demo, FIGURE_DIR / "application_spectra_compare.png"),
+        plot_color_circles(demo, FIGURE_DIR / "color_circle_compare.png"),
     ]
     for fig in figures:
         plt.close(fig)

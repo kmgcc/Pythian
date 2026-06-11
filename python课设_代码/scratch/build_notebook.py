@@ -210,55 +210,97 @@ display(sample_error_frame(true_spectrum, pred_spectrum))""")
 
 md("""## 7. 照明补偿应用展示
 
-预测光谱的用途：估计当前室内自然光的光谱构成，再用七通道 LED 把光谱"补"向目标。
+本节是应用层演示：用户设定一组天气/环境参数，系统走完整条应用链路——
+
+> 场景参数 → 模型预测 PCA 主成分系数 → 逆变换还原自然光相对光谱 → 多通道 LED 补偿 → 传统双色温 LED 对照 → 光谱与色度对比
+
+涉及的应用层算法：
 
 - **目标光谱**：实测晴天高太阳高度角日光的平均相对光谱（由真实数据计算，不是人工设定曲线）；
-- **当前光谱**：模型预测的自然光相对光谱 × 室内自然光占比；
-- **补偿算法**：非负最小二乘求解七个 LED 通道比例，使 `LED 混光 + 当前自然光` 尽量接近目标光谱；
-- LED 通道光谱全部来自公开实测 LED SPD 数据。""")
+- **当前光谱**：模型预测的自然光相对光谱 × 室内自然光占比（由室外照度和目标照度估算）；
+- **多通道补偿**：非负最小二乘求解七个 LED 通道比例，使 `自然光 + LED 混光` 尽量接近目标光谱；
+- **传统双色温对照**：常见双色温灯具只有冷暖配比和亮度两个旋钮，把混光写成 `gain × (a×暖白 + (1-a)×冷白)`，在 a∈[0,1] 上搜索与目标误差最小的组合，用来说明"能调冷暖，但光谱形状受限"；
+- **近似色度预览**：光谱与 CIE 2015（CIE 2006 生理学数据推导）10° 观察者色匹配函数积分得 XYZ，亮度归一化后转 sRGB，刻意不使用 1931 年的旧标准观察者。
+
+四个天气预设不是手写参数：每个预设先在真实数据集中筛出对应场景子集，数值特征取中位数、类别特征取众数，保证输入和训练数据同分布。""")
 
 code("""from src.led_spectrum_data import fetch_and_build_dual_white_spectrum
-from src.lighting_compensation import (
-    compute_compensation, channel_recommendation_frame,
-    compensation_summary_frame, band_error_frame,
-)
-from src.visualization import (
-    plot_channel_weights, plot_compensation_result, plot_band_error_reduction,
+from src.model_training import SpectrumPredictor
+from src.preprocessing import FEATURE_COLUMNS
+from src.application_demo import (
+    PRESET_DEFINITIONS, PRESET_NAMES, run_application_demo,
+    pca_coefficient_frame, channel_percent_frame,
+    error_comparison_frame, color_preview_frame, preset_summary_frame,
 )
 
 # 确保实测 LED 光谱就绪（已缓存则直接复用）
 fetch_and_build_dual_white_spectrum(force=False)
 
-# 以第 6 节的预测光谱作为当前自然光，演示一个学习场景的补偿
-compensation = compute_compensation(
-    current_spectrum=pred_spectrum,
-    scene="学习",
-    target_lux=500.0,
-    outdoor_lux=50000.0,
+# 把第 4-5 节训练好的最佳模型包装成预测器，供应用层调用
+predictor = SpectrumPredictor(
+    best_model_name=best_name,
+    pipeline=trained[best_name].pipeline,
+    spectrum_pca=spectrum_pca,
+    feature_columns=FEATURE_COLUMNS,
+    metrics=metrics,
 )
 
-print("补偿核心指标：")
-display(compensation_summary_frame(compensation))
+print("可选天气预设：")
+for name in PRESET_NAMES:
+    print(f"  - {name}：{PRESET_DEFINITIONS[name]['说明']}")
 
-print("七通道 LED 输出比例：")
-display(channel_recommendation_frame(compensation.channel_weights))""")
+PRESET = "晴天中午"   # 课堂演示时改这里即可切换场景
+demo = run_application_demo(predictor, dataset, preset=PRESET, scene="学习", target_lux=500.0)
 
-code("""plot_channel_weights(compensation.channel_weights)
+print(f"\\n当前预设「{PRESET}」生成的模型输入：")
+display(demo.features)""")
+
+code("""from src.spectrum_utils import WAVELENGTHS
+
+print("模型预测的 5 个 PCA 主成分系数：")
+display(pca_coefficient_frame(demo))
+
+# 逆变换还原的预测自然光相对光谱
+fig, ax = plt.subplots(figsize=(8, 4.2))
+ax.plot(WAVELENGTHS, demo.predicted_spectrum, color="#4c78a8", linewidth=2.2)
+ax.set_title(f"预测自然光相对光谱 —— {PRESET}")
+ax.set_xlabel("Wavelength (nm)")
+ax.set_ylabel("Relative intensity")
+plt.show()""")
+
+code("""# 多通道 LED 补偿：非负最小二乘解出的七通道驱动比例
+print("多通道 LED 补偿比例：")
+display(channel_percent_frame(demo))
+
+# 传统双色温对照：冷暖配比 + 亮度两个旋钮下的最优组合
+print(f"传统双色温对照方案：{demo.dual_cct_label}，亮度系数 {demo.dual_cct.gain:.3f}")""")
+
+code("""from src.visualization import plot_application_spectra, plot_color_circles
+
+# 四条光谱曲线：目标 / 预测自然光室内贡献 / 多通道补偿后 / 传统双色温
+plot_application_spectra(demo)
+plt.show()""")
+
+code("""# 白圆近似色度对比：亮度统一归一化，只看色度差异
+plot_color_circles(demo)
 plt.show()
 
-plot_compensation_result(compensation)
-plt.show()
+display(color_preview_frame(demo))
+print("说明：屏幕颜色仅为根据光谱计算得到的近似色度预览，不能替代真实光谱视觉效果。"
+      "不同光谱可能在屏幕上显示为相近颜色，但其光谱组成仍然不同。")""")
 
-plot_band_error_reduction(compensation)
-plt.show()
+code("""# 三种方案相对目标光谱的误差
+display(error_comparison_frame(demo))
 
-print(f"补偿前 RMSE: {compensation.before_rmse:.4f}")
-print(f"补偿后 RMSE: {compensation.after_rmse:.4f}")
-print(f"误差下降: {compensation.improvement_percent:.1f}%")""")
+# 四个天气预设各跑一遍的汇总
+print("四个天气预设的补偿效果汇总：")
+display(preset_summary_frame(predictor, dataset))""")
 
-md("""## 小结
+md("""从误差表可以看到：多通道补偿在四个天气预设下都把误差降低 40% 以上，传统双色温方案也能改善，但始终差一截——它只能在暖白和冷白之间调配比，补不出目标光谱在各波段的细节形状。这正是多通道补偿方案的价值所在。
 
-本 Notebook 完整走了一遍"真实数据 → 预处理 → 特征工程 → PCA → 五模型对比 → 光谱还原 → 照明补偿"的流程。模型估计不能替代现场光谱仪实测，但它说明：在只有天气、时间、地点、太阳位置这类低成本特征的条件下，估计自然光相对光谱并据此给出 LED 补偿建议，是一条走得通的流程。""")
+## 小结
+
+本 Notebook 完整走了一遍"真实数据 → 预处理 → 特征工程 → PCA → 五模型对比 → 光谱还原 → 应用演示"的流程。模型估计不能替代现场光谱仪实测，但它说明：在只有天气、时间、地点、太阳位置这类低成本特征的条件下，估计自然光相对光谱、给出多通道 LED 补偿建议、并和传统双色温方案对比，是一条走得通的流程。""")
 
 nb = {
     "cells": cells,
