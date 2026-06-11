@@ -1,726 +1,187 @@
-from __future__ import annotations
+"""Streamlit 课程设计演示看板。
 
-import datetime
-import re
-from pathlib import Path
-from zoneinfo import ZoneInfo
+五个板块对应项目流程：数据概览 → 光谱 PCA → 模型训练与对比 → 光谱预测结果 → 照明补偿演示。
+启动方式：streamlit run app.py
+"""
+
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
-import plotly.express as px
-import plotly.graph_objects as go
-from astral import Observer
-from astral.sun import elevation as solar_elevation
 
-from src.spectrum_utils import SCENE_TARGET_LUX, SPECTRUM_COLUMNS, WAVELENGTHS, natural_daylight_reference
+from src.data_loader import dataset_summary
+from src.evaluation import sample_error_frame
 from src.lighting_compensation import (
     band_error_frame,
     channel_recommendation_frame,
     compensation_summary_frame,
     compute_compensation,
-    CHANNEL_NAMES,
 )
-from src.pipeline import load_or_train, run_full_pipeline
-from src.spectrum_model import predict_spectrum
+from src.pipeline import load_or_train
+from src.spectrum_utils import SCENE_TARGET_LUX, WAVELENGTHS
 from src.visualization import (
-    light_color_comparison_frame,
-    plot_light_halo_comparison,
+    configure_plot_style,
+    plot_compensation_result,
+    plot_model_compare,
+    plot_pca_variance,
+    plot_prediction_compare,
+    plot_weather_spectrum_compare,
 )
 
-# Page configuration
-st.set_page_config(
-    page_title="自然光光谱预测与照明补偿",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-# Custom premium styling
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: #f7f9fb;
-    }
-    [data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #e5e9ef;
-    }
-    .block-container {
-        padding-top: 1.2rem;
-        padding-bottom: 2rem;
-        max-width: 1300px;
-    }
-    div[data-testid="stMetric"] {
-        background: #ffffff;
-        border: 1px solid #e4e7ec;
-        border-radius: 8px;
-        padding: 0.65rem 0.8rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    div[data-testid="stMetricLabel"], div[data-testid="stMetricLabel"] * {
-        font-size: 0.8rem !important;
-        color: #64748b !important;
-    }
-    div[data-testid="stMetricValue"], div[data-testid="stMetricValue"] * {
-        font-size: 1.15rem !important;
-        font-weight: 600 !important;
-        color: #1e293b !important;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0.4rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 6px 6px 0 0;
-        padding: 0.55rem 0.9rem;
-        font-weight: 500;
-    }
-    .section-note {
-        border-left: 4px solid #2f6fed;
-        background: #ffffff;
-        padding: 0.8rem 1rem;
-        color: #334155;
-        border-radius: 0 6px 6px 0;
-        margin: 0.6rem 0 1rem 0;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    .flow-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(120px, 1fr));
-        gap: 10px;
-        margin: 0.8rem 0 1rem 0;
-    }
-    .flow-step {
-        background: #ffffff;
-        border: 1px solid #e5e9ef;
-        border-radius: 8px;
-        padding: 0.72rem 0.78rem;
-        min-height: 72px;
-        color: #172033;
-        font-size: 0.92rem;
-        line-height: 1.35;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.01);
-    }
-    @media (max-width: 760px) {
-        .flow-grid {
-            grid-template-columns: repeat(2, minmax(120px, 1fr));
-        }
-    }
-    /* Sidebar buttons styling */
-    div[data-testid="stSidebar"] button {
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        transition: all 0.25s ease !important;
-        border: 1px solid #e2e8f0 !important;
-        background-color: #ffffff !important;
-        color: #334155 !important;
-        font-size: 0.85rem !important;
-        height: 2.4rem !important;
-        padding: 0px 4px !important;
-    }
-    div[data-testid="stSidebar"] button:hover {
-        border-color: #2f6fed !important;
-        color: #2f6fed !important;
-        background-color: #f0f7ff !important;
-        box-shadow: 0 2px 4px rgba(47, 111, 237, 0.08) !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+st.set_page_config(page_title="自然光光谱估计与照明补偿", layout="wide")
 
 
-@st.cache_resource(show_spinner=False)
+@st.cache_resource(show_spinner="正在加载数据与模型（首次运行会自动训练）...")
 def cached_load():
     return load_or_train()
 
 
-def _parse_coordinate(value: object) -> float:
-    text = str(value).strip()
-    match = re.match(r"^([\d.]+)\s*([NSEWnsew])$", text)
-    if match:
-        number = float(match.group(1))
-        return -number if match.group(2).upper() in ("S", "W") else number
-    return float(text)
-
-
-@st.cache_data(show_spinner=False)
-def load_stations() -> dict[str, dict[str, object]]:
-    """Load real observation stations (coordinates + timezone) from the downloaded metadata."""
-    path = Path(__file__).resolve().parent / "data/external/meta_location.csv"
-    meta = pd.read_csv(path)
-    stations: dict[str, dict[str, object]] = {}
-    for _, row in meta.iterrows():
-        stations[str(row["location_name"])] = {
-            "lat": _parse_coordinate(row["latitude"]),
-            "lon": _parse_coordinate(row["longitude"]),
-            "tz": str(row["timezone"]),
-        }
-    return stations
-
-
-def compute_solar_altitude(lat: float, lon: float, tz: str, date: datetime.date, hour: int) -> float:
-    """Real astronomical solar elevation (degrees) via astral for the given place/time."""
-    moment = datetime.datetime(date.year, date.month, date.day, int(hour), 0, tzinfo=ZoneInfo(tz))
-    altitude = solar_elevation(Observer(latitude=lat, longitude=lon), moment)
-    return float(max(altitude, 0.0))
-
-
-@st.cache_resource(show_spinner=False)
-def cached_outdoor_lux_model(_dataset: pd.DataFrame):
-    """Regression of real outdoor illuminance on real measured weather/solar features."""
-    from sklearn.ensemble import RandomForestRegressor
-
-    base_features = ["solar_altitude", "cloud_cover", "humidity", "precipitation"]
-    features = pd.concat(
-        [_dataset[base_features], pd.get_dummies(_dataset["weather"], prefix="w")], axis=1
-    )
-    target = _dataset["outdoor_lux"].to_numpy(dtype=float)
-    model = RandomForestRegressor(n_estimators=120, max_depth=16, random_state=42, n_jobs=-1)
-    model.fit(features, target)
-    return model, list(features.columns)
-
-
-def predict_outdoor_lux(
-    lux_model,
-    solar_altitude: float,
-    cloud_cover: float,
-    humidity: float,
-    precipitation: float,
-    weather: str,
-) -> float:
-    model, columns = lux_model
-    row = {
-        "solar_altitude": solar_altitude,
-        "cloud_cover": cloud_cover,
-        "humidity": humidity,
-        "precipitation": precipitation,
-    }
-    for column in columns:
-        if column.startswith("w_"):
-            row[column] = 1.0 if column == f"w_{weather}" else 0.0
-    features = pd.DataFrame([row])[columns]
-    return float(model.predict(features)[0])
-
-
-def find_test_sample(x_test, weather, target_hour):
-    # Filter by weather
-    subset = x_test[x_test["weather"] == weather]
-    if subset.empty:
-        return None
-    # Find the row with hour closest to target_hour
-    idx = (subset["hour"] - target_hour).abs().idxmin()
-    return int(idx)
-
-
-st.title("自然光相对光谱预测与室内照明补偿")
-st.caption("基于机器学习的自然光光谱还原与多通道可调 LED 光谱级室内补光仿真系统")
-
-# Load dataset and trained models
 try:
-    with st.spinner("正在准备数据与模型..."):
-        dataset, model_result = cached_load()
+    dataset, result = cached_load()
 except Exception as exc:
-    st.error("项目依赖或模型文件尚未准备好。")
-    st.code("pip install -r requirements.txt\njupyter notebook main.ipynb\nstreamlit run app.py", language="bash")
+    st.error("数据或模型尚未准备好，请先安装依赖并运行流水线。")
+    st.code("pip install -r requirements.txt\npython -m src.pipeline", language="bash")
     st.exception(exc)
     st.stop()
 
-# Basic setup and best model retrieval
-metrics = model_result.metrics.copy()
-best_row = metrics[metrics["model"] == model_result.best_model_name].iloc[0]
+configure_plot_style()
 
-# Initialize session state for environmental parameters if they don't exist
-if "env_weather" not in st.session_state:
-    st.session_state["env_weather"] = "晴"
-if "env_hour" not in st.session_state:
-    st.session_state["env_hour"] = 12
-if "env_cloud_cover" not in st.session_state:
-    st.session_state["env_cloud_cover"] = 0.18
-if "env_humidity" not in st.session_state:
-    st.session_state["env_humidity"] = 0.55
-if "env_temperature" not in st.session_state:
-    st.session_state["env_temperature"] = 25.0
-if "env_precipitation" not in st.session_state:
-    st.session_state["env_precipitation"] = 0.0
-if "comparison_test_idx" not in st.session_state:
-    st.session_state["comparison_test_idx"] = None
-
-# Check if current state matches ref_row to auto-clear comparison mode
-if st.session_state["comparison_test_idx"] is not None:
-    test_idx = st.session_state["comparison_test_idx"]
-    ref_row = model_result.x_test.loc[test_idx]
-    matches = (
-        st.session_state["env_weather"] == ref_row["weather"] and
-        st.session_state["env_hour"] == int(ref_row["hour"]) and
-        abs(st.session_state["env_cloud_cover"] - ref_row["cloud_cover"]) < 1e-4 and
-        abs(st.session_state["env_humidity"] - ref_row["humidity"]) < 1e-4 and
-        abs(st.session_state["env_temperature"] - ref_row["temperature"]) < 1e-4 and
-        abs(st.session_state["env_precipitation"] - ref_row["precipitation"]) < 1e-4
-    )
-    if not matches:
-        st.session_state["comparison_test_idx"] = None
-
-# Side bar input variables
-with st.sidebar:
-    st.subheader("环境输入条件")
-    
-    # Environment Presets Card
-    st.markdown(
-        """
-        <div style="
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.5rem 0.8rem;
-            margin-bottom: 0.8rem;
-            text-align: center;
-        ">
-            <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">
-                气象参数实验对比
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    
-    # Grid of buttons for presets
-    p_col1, p_col2 = st.columns(2)
-    with p_col1:
-        if st.button("晴朗正午", use_container_width=True, key="btn_sunny_noon"):
-            test_idx = find_test_sample(model_result.x_test, "晴", 12)
-            if test_idx is not None:
-                ref_row = model_result.x_test.loc[test_idx]
-                st.session_state["env_weather"] = ref_row["weather"]
-                st.session_state["env_hour"] = int(ref_row["hour"])
-                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
-                st.session_state["env_humidity"] = float(ref_row["humidity"])
-                st.session_state["env_temperature"] = float(ref_row["temperature"])
-                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
-                st.session_state["comparison_test_idx"] = test_idx
-                st.toast("已加载真实样本进行气象参数实验对比")
-            st.rerun()
-            
-        if st.button("阴天清晨", use_container_width=True, key="btn_overcast_morning"):
-            test_idx = find_test_sample(model_result.x_test, "阴", 7)
-            if test_idx is not None:
-                ref_row = model_result.x_test.loc[test_idx]
-                st.session_state["env_weather"] = ref_row["weather"]
-                st.session_state["env_hour"] = int(ref_row["hour"])
-                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
-                st.session_state["env_humidity"] = float(ref_row["humidity"])
-                st.session_state["env_temperature"] = float(ref_row["temperature"])
-                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
-                st.session_state["comparison_test_idx"] = test_idx
-                st.toast("已加载真实样本进行气象参数实验对比")
-            st.rerun()
-            
-    with p_col2:
-        if st.button("雨天下午", use_container_width=True, key="btn_rainy_afternoon"):
-            test_idx = find_test_sample(model_result.x_test, "雨", 15)
-            if test_idx is not None:
-                ref_row = model_result.x_test.loc[test_idx]
-                st.session_state["env_weather"] = ref_row["weather"]
-                st.session_state["env_hour"] = int(ref_row["hour"])
-                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
-                st.session_state["env_humidity"] = float(ref_row["humidity"])
-                st.session_state["env_temperature"] = float(ref_row["temperature"])
-                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
-                st.session_state["comparison_test_idx"] = test_idx
-                st.toast("已加载真实样本进行气象参数实验对比")
-            st.rerun()
-            
-        if st.button("多云傍晚", use_container_width=True, key="btn_cloudy_evening"):
-            test_idx = find_test_sample(model_result.x_test, "多云", 18)
-            if test_idx is not None:
-                ref_row = model_result.x_test.loc[test_idx]
-                st.session_state["env_weather"] = ref_row["weather"]
-                st.session_state["env_hour"] = int(ref_row["hour"])
-                st.session_state["env_cloud_cover"] = float(ref_row["cloud_cover"])
-                st.session_state["env_humidity"] = float(ref_row["humidity"])
-                st.session_state["env_temperature"] = float(ref_row["temperature"])
-                st.session_state["env_precipitation"] = float(ref_row["precipitation"])
-                st.session_state["comparison_test_idx"] = test_idx
-                st.toast("已加载真实样本进行气象参数实验对比")
-            st.rerun()
-            
-    st.divider()
-
-    stations = load_stations()
-    station_name = st.selectbox("观测地点", list(stations.keys()), key="env_station")
-    obs_date = st.date_input("日期", value=datetime.date(2016, 6, 21), key="env_date")
-    weather = st.selectbox("天气状况", ["晴", "多云", "阴", "雨"], key="env_weather")
-    hour = st.slider("时间 (小时)", min_value=6, max_value=18, step=1, key="env_hour")
-    cloud_cover = st.slider("云量", min_value=0.0, max_value=1.0, step=0.01, key="env_cloud_cover")
-    humidity = st.slider("环境湿度", min_value=0.2, max_value=1.0, step=0.01, key="env_humidity")
-    temperature = st.slider("环境温度 / ℃", min_value=0.0, max_value=40.0, step=0.5, key="env_temperature")
-    precipitation = st.slider("降水强度", min_value=0.0, max_value=1.0, step=0.01, key="env_precipitation")
-
-    station = stations[station_name]
-    solar_altitude = compute_solar_altitude(station["lat"], station["lon"], station["tz"], obs_date, hour)
-    outdoor_lux = predict_outdoor_lux(
-        cached_outdoor_lux_model(dataset), solar_altitude, cloud_cover, humidity, precipitation, weather
-    )
-    st.caption(f"真实天文计算太阳高度角 {solar_altitude:.1f}° · 实测数据回归室外照度 {outdoor_lux:.0f} lux")
-
-    st.divider()
-    st.subheader("室内场景与照度")
-    scene = st.selectbox("室内使用场景", list(SCENE_TARGET_LUX.keys()), index=0)
-    target_lux = st.number_input("目标照度 / lux", min_value=80, max_value=1000, value=SCENE_TARGET_LUX[scene], step=10)
-    
-    st.divider()
-    if st.button("重新生成训练结果"):
-        st.cache_resource.clear()
-        with st.spinner("正在重新生成数据、训练模型并导出图表..."):
-            run_full_pipeline()
-        st.rerun()
-
-# Run predictions and compensation logic
-input_features = {
-    "hour": hour,
-    "cloud_cover": cloud_cover,
-    "humidity": humidity,
-    "temperature": temperature,
-    "precipitation": precipitation,
-    "solar_altitude": solar_altitude,
-    "outdoor_lux": outdoor_lux,
-    "weather": weather,
-}
-pred_spectrum = predict_spectrum(model_result, input_features)
-compensation = compute_compensation(
-    current_spectrum=pred_spectrum,
-    scene=scene,
-    target_lux=float(target_lux),
-    outdoor_lux=outdoor_lux,
+st.title("基于真实天光数据的自然光光谱估计与室内照明补偿设计")
+st.caption(
+    "流程：真实天光光谱数据 → 特征工程 → 光谱 PCA → 五模型对比 → 相对光谱估计 → LED 照明补偿。"
+    "数据来源：SKYSPECTRA 实测天光光谱（Zenodo）+ Open-Meteo 历史天气 + 实测 LED 光谱。"
 )
 
-# Top 5 core metrics cards
-top_cols = st.columns(5)
-with top_cols[0]:
-    st.metric("数据集样本量", f"{len(dataset):,}")
-with top_cols[1]:
-    st.metric("预测最佳模型", model_result.best_model_name)
-with top_cols[2]:
-    st.metric("累计解释方差", f"{model_result.pca.explained_variance_ratio_.sum() * 100:.1f}%")
-with top_cols[3]:
-    st.metric("室外照度估计", f"{outdoor_lux:,.0f} lx")
-with top_cols[4]:
-    st.metric("补偿后综合误差", f"{compensation.after_rmse:.4f}")
+tab_data, tab_pca, tab_models, tab_predict, tab_comp = st.tabs(
+    ["① 数据概览", "② 光谱 PCA", "③ 模型训练与对比", "④ 光谱预测结果", "⑤ 照明补偿演示"]
+)
 
-# Streamlit Tab navigation layout
-tabs = st.tabs(["数据预览", "光谱分析", "PCA 与模型", "预测与补偿"])
+# ---------------- ① 数据概览 ----------------
+with tab_data:
+    st.markdown("**真实公开数据按地点和时间合并成建模数据集，天气为对齐的历史天气特征。**")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("样本数", f"{len(dataset):,}")
+    c2.metric("观测站数", dataset["station_name"].nunique())
+    c3.metric("光谱维度", "41 (380-780nm)")
+    c4.metric("时间范围", f"{dataset['date'].min()} ~ {dataset['date'].max()}")
 
-with tabs[0]:
-    st.subheader("气象特征与样本光谱数据预览")
-    preview_cols = [
-        "sample_id",
-        "date",
-        "hour",
-        "city",
-        "weather",
-        "solar_altitude",
-        "cloud_cover",
-        "humidity",
-        "temperature",
-        "precipitation",
-        "outdoor_lux",
-    ]
-    st.dataframe(dataset[preview_cols].head(15), use_container_width=True, hide_index=True)
+    left, right = st.columns([1.2, 1])
+    with left:
+        st.markdown("数据集前几行（环境特征 + 41 列光谱）：")
+        st.dataframe(dataset.head(8), width="stretch", hide_index=True, height=240)
+    with right:
+        st.dataframe(dataset_summary(dataset), width="stretch", hide_index=True, height=240)
 
+    fig = plot_weather_spectrum_compare(dataset)
+    st.pyplot(fig, clear_figure=True)
+
+# ---------------- ② 光谱 PCA ----------------
+with tab_pca:
+    st.markdown(
+        "**PCA 把 41 维相对光谱压缩成 5 个主成分系数：模型只需预测 5 个数，"
+        "再用 inverse_transform 还原完整光谱曲线。**"
+    )
+    n_keep = result.spectrum_pca.n_components
+    cum = float(result.spectrum_pca.explained_variance_ratio_.sum())
     c1, c2 = st.columns(2)
+    c1.metric("保留主成分数量", n_keep)
+    c2.metric("累计解释方差", f"{cum * 100:.2f}%")
+
+    left, right = st.columns([1.2, 1])
+    with left:
+        st.pyplot(plot_pca_variance(result.spectrum_pca.pca), clear_figure=True)
+    with right:
+        st.dataframe(result.spectrum_pca.variance_frame(), width="stretch", hide_index=True)
+
+# ---------------- ③ 模型训练与对比 ----------------
+with tab_models:
+    st.markdown(
+        "**五个 sklearn 模型在相同特征、相同 PCA 目标、相同训练/测试划分下对比，"
+        "按 RMSE 选出最佳模型。**"
+    )
+    best_row = result.metrics.iloc[0]
+    c1, c2, c3 = st.columns(3)
+    c1.metric("最佳模型", result.best_model_name)
+    c2.metric("最佳 RMSE", f"{best_row['RMSE']:.4f}")
+    c3.metric("最佳 R²", f"{best_row['R2']:.4f}")
+
+    st.dataframe(result.metrics, width="stretch", hide_index=True)
+    st.pyplot(plot_model_compare(result.metrics), clear_figure=True)
+
+# ---------------- ④ 光谱预测结果 ----------------
+with tab_predict:
+    st.markdown("**从测试集选一条样本：实测相对光谱 vs 最佳模型预测光谱。**")
+    n_test = len(result.y_test_spectrum)
+    if "sample_pos" not in st.session_state:
+        st.session_state["sample_pos"] = 0
+
+    c_btn, c_slider = st.columns([1, 3])
+    with c_btn:
+        if st.button("🎲 随机抽一条测试样本"):
+            st.session_state["sample_pos"] = int(np.random.randint(0, n_test))
+    with c_slider:
+        sample_pos = st.slider("测试样本序号", 0, n_test - 1, key="sample_pos")
+
+    true_spec = result.y_test_spectrum[sample_pos]
+    pred_spec = result.y_pred_spectrum[sample_pos]
+
+    st.markdown("该样本的环境输入：")
+    st.dataframe(result.x_test.iloc[[sample_pos]], width="stretch", hide_index=True)
+
+    left, right = st.columns([1.6, 1])
+    with left:
+        st.pyplot(plot_prediction_compare(true_spec, pred_spec), clear_figure=True)
+    with right:
+        st.markdown("该样本误差：")
+        st.dataframe(sample_error_frame(true_spec, pred_spec), width="stretch", hide_index=True)
+
+# ---------------- ⑤ 照明补偿演示 ----------------
+with tab_comp:
+    st.markdown(
+        "**预测光谱的应用：与目标光谱（实测晴天日光均值）对比，"
+        "用非负最小二乘求七通道 LED 补偿比例，展示补偿前后误差变化。**"
+    )
+    c1, c2, c3 = st.columns(3)
     with c1:
-        fig = px.scatter(
-            dataset,
-            x="solar_altitude",
-            y="outdoor_lux",
-            color="weather",
-            size="cloud_cover",
-            opacity=0.68,
-            title="太阳高度角、云量与室外照度的物理映射",
-            labels={"solar_altitude": "太阳高度角 (°)", "outdoor_lux": "室外照度 (lux)", "weather": "天气"},
-            color_discrete_map={"晴": "#f9a825", "多云": "#78909c", "阴": "#546e7a", "雨": "#1e88e5"},
-        )
-        fig.update_layout(height=400, margin=dict(l=20, r=20, t=60, b=20), legend_title_text="")
-        st.plotly_chart(fig, use_container_width=True)
+        scene = st.selectbox("室内场景", list(SCENE_TARGET_LUX.keys()), index=0)
     with c2:
-        hourly_lux = dataset.groupby(["hour", "weather"], as_index=False)["outdoor_lux"].mean()
-        fig = px.line(
-            hourly_lux,
-            x="hour",
-            y="outdoor_lux",
-            color="weather",
-            markers=True,
-            title="一天中各天气下平均照度变化曲线",
-            labels={"hour": "时间 (小时)", "outdoor_lux": "平均室外照度 (lux)", "weather": "天气"},
-            color_discrete_map={"晴": "#f9a825", "多云": "#78909c", "阴": "#546e7a", "雨": "#1e88e5"},
-        )
-        fig.update_layout(height=400, margin=dict(l=20, r=20, t=60, b=20), legend_title_text="")
-        st.plotly_chart(fig, use_container_width=True)
+        target_lux = st.number_input("目标照度 / lux", 80, 1000, SCENE_TARGET_LUX[scene], step=10)
+    with c3:
+        outdoor_lux = st.number_input("室外照度 / lux", 1000, 120000, 50000, step=1000)
 
-with tabs[1]:
-    st.subheader("日光光谱物理特性分析")
-    
-    # Real measured natural-daylight reference (averaged clear-sky spectra from the dataset)
-    base_spectrum_df = pd.DataFrame(
-        {"wavelength_nm": WAVELENGTHS, "relative_intensity": natural_daylight_reference()}
-    )
-    fig = px.line(
-        base_spectrum_df,
-        x="wavelength_nm",
-        y="relative_intensity",
-        title="实测自然光相对光谱（晴天日光均值，可见光区 380nm-780nm）",
-        labels={"wavelength_nm": "波长 (nm)", "relative_intensity": "相对光谱强度"},
-    )
-    fig.update_traces(line=dict(color="#f9a825", width=3))
-    fig.update_layout(height=380, margin=dict(l=20, r=20, t=60, b=20))
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Calculate average weather relative spectrum
-    compare_rows = []
-    for w in ["晴", "多云", "阴", "雨"]:
-        subset = dataset[dataset["weather"] == w]
-        if not subset.empty:
-            mean_spec = subset[SPECTRUM_COLUMNS].mean().to_numpy()
-            mean_spec = mean_spec / mean_spec.max()  # normalize
-            for wl, val in zip(WAVELENGTHS, mean_spec):
-                compare_rows.append({"波长(nm)": int(wl), "相对强度": float(val), "天气状况": f"{w}天平均相对光谱"})
-    compare_df = pd.DataFrame(compare_rows)
-    
-    fig2 = px.line(
-        compare_df,
-        x="波长(nm)",
-        y="相对强度",
-        color="天气状况",
-        title="不同天气状况下自然光平均相对光谱对比",
-        color_discrete_map={
-            "晴天平均相对光谱": "#f9a825",
-            "多云天平均相对光谱": "#78909c",
-            "阴天平均相对光谱": "#546e7a",
-            "雨天平均相对光谱": "#1e88e5",
-        }
-    )
-    fig2.update_traces(line=dict(width=3))
-    fig2.update_layout(height=400, hovermode="x unified", margin=dict(l=20, r=20, t=60, b=20), legend_title_text="")
-    st.plotly_chart(fig2, use_container_width=True)
-
-with tabs[2]:
-    st.subheader("PCA 降维提取与多模型回归拟合评估")
-    
-    explained_variance = model_result.pca.explained_variance_ratio_
-    components = [f"PC{i}" for i in range(1, len(explained_variance) + 1)]
-    
-    c1, c2 = st.columns([0.9, 1.1])
-    with c1:
-        text_labels = [
-            f"{v * 100:.2f}%" if v >= 0.001 else f"{v * 100:.3f}%"
-            for v in explained_variance
-        ]
-        fig = go.Figure()
-        fig.add_bar(
-            x=components,
-            y=explained_variance,
-            name="单个主成分方差占比",
-            marker_color="#6f4e9b",
-            text=text_labels,
-            textposition="outside",
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=components,
-                y=np.cumsum(explained_variance),
-                name="累计解释方差",
-                mode="lines+markers",
-                line=dict(color="#d95f02", width=3),
-            )
-        )
-        fig.update_layout(
-            title="PCA 主成分提取解释方差",
-            yaxis=dict(
-                type="log",
-                title="方差占比 (对数刻度)",
-                range=[np.log10(max(explained_variance.min() * 0.3, 1e-6)), 0],
-            ),
-            height=400,
-            margin=dict(l=20, r=20, t=60, b=20),
-            legend_title_text="",
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    with c2:
-        st.dataframe(metrics, use_container_width=True, hide_index=True)
-        metric_long = metrics.melt(id_vars="model", value_vars=["MAE", "RMSE", "R2"], var_name="指标", value_name="数值")
-        fig = px.bar(
-            metric_long,
-            x="model",
-            y="数值",
-            color="指标",
-            barmode="group",
-            title="回归预测模型效果评价对比 (MAE / RMSE / R²)",
-            color_discrete_map={"MAE": "#1e88e5", "RMSE": "#e53935", "R2": "#43a047"},
-        )
-        fig.update_layout(height=290, margin=dict(l=20, r=20, t=50, b=20), xaxis_title="", yaxis_title="指标得分")
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-    st.subheader("模型测试集预测表现抽样比对")
-    sample_number = st.slider("测试集样本序号", 0, len(model_result.y_test_spectrum) - 1, 0)
-    true_spec = model_result.y_test_spectrum[sample_number]
-    pred_spec = model_result.y_pred_spectrum[sample_number]
-    
-    pred_compare_rows = []
-    for wl, t_val, p_val in zip(WAVELENGTHS, true_spec, pred_spec):
-        pred_compare_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "曲线": "真实测量光谱"})
-        pred_compare_rows.append({"波长(nm)": int(wl), "相对强度": float(p_val), "曲线": "模型预测光谱"})
-    pred_compare_df = pd.DataFrame(pred_compare_rows)
-    
-    fig3 = px.line(
-        pred_compare_df,
-        x="波长(nm)",
-        y="相对强度",
-        color="曲线",
-        title=f"随机样本 #{sample_number}：预测光谱与真实测量光谱的吻合度",
-        color_discrete_map={"真实测量光谱": "#2f6fed", "模型预测光谱": "#f59e0b"},
-    )
-    fig3.update_traces(line=dict(width=3))
-    fig3.update_layout(height=380, hovermode="x unified", margin=dict(l=20, r=20, t=60, b=20), legend_title_text="")
-    st.plotly_chart(fig3, use_container_width=True)
-
-with tabs[3]:
-    st.subheader("室内七通道 LED 补偿仿真实验")
-    
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("有效 LED 通道", f"{compensation.active_channel_count} / 7", help="输出比例 >= 0.5% 的通道数")
-    m2.metric("重合度改善比例", f"{compensation.improvement_percent:.1f}%")
-    m3.metric("补光前 RMSE", f"{compensation.before_rmse:.4f}")
-    m4.metric("补光后 RMSE", f"{compensation.after_rmse:.4f}")
-
-    # Plot predicted spectrum
-    test_idx = st.session_state.get("comparison_test_idx")
-    if test_idx is not None:
-        # Experimental Comparison Mode: plot true vs predicted
-        true_spec = model_result.y_test_spectrum[test_idx]
-        true_spec = true_spec / true_spec.max()  # normalize
-        
-        compare_rows = []
-        for wl, t_val, p_val in zip(WAVELENGTHS, true_spec, pred_spectrum):
-            compare_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "光谱曲线": "原始真实光谱"})
-            compare_rows.append({"波长(nm)": int(wl), "相对强度": float(p_val), "光谱曲线": "模型预测光谱"})
-        compare_df = pd.DataFrame(compare_rows)
-        
-        fig_pred = px.line(
-            compare_df,
-            x="波长(nm)",
-            y="相对强度",
-            color="光谱曲线",
-            title="气象参数实验对比：原始真实光谱 vs 模型预测光谱",
-            color_discrete_map={"原始真实光谱": "#2f6fed", "模型预测光谱": "#f59e0b"},
-        )
-        fig_pred.update_traces(line=dict(width=3))
-    else:
-        # Manual Mode: plot predicted only
-        predict_df = pd.DataFrame({
-            "波长(nm)": WAVELENGTHS,
-            "相对强度": pred_spectrum
-        })
-        fig_pred = px.line(predict_df, x="波长(nm)", y="相对强度", title="输入条件预测出的自然光相对光谱形态")
-        fig_pred.update_traces(line=dict(color="#1f77b4", width=3))
-        
-    fig_pred.update_layout(height=360, margin=dict(l=20, r=20, t=50, b=20), legend_title_text="")
-    st.plotly_chart(fig_pred, use_container_width=True)
-
-    c1, c2 = st.columns([0.9, 1.1])
-    with c1:
-        # Build LED weights bar chart
-        channel_colors = {
-            "深蓝/蓝光": "#1e88e5",
-            "青光": "#00acc1",
-            "绿光": "#2f9e44",
-            "琥珀光": "#f9a825",
-            "红光": "#e53935",
-            "暖白": "#ffb300",
-            "冷白": "#80deea"
-        }
-        weights_df = pd.DataFrame({
-            "通道": CHANNEL_NAMES,
-            "推荐比例": compensation.channel_weights,
-            "输出比例(%)": np.round(compensation.channel_weights * 100, 1),
-            "颜色": [channel_colors[name] for name in CHANNEL_NAMES]
-        })
-        fig_weights = px.bar(
-            weights_df,
-            x="通道",
-            y="输出比例(%)",
-            color="通道",
-            title="七通道 LED 单色输出负荷比 (优化目标计算)",
-            color_discrete_sequence=weights_df["颜色"].tolist(),
-            text="输出比例(%)",
-        )
-        fig_weights.update_traces(textposition="outside", cliponaxis=False)
-        fig_weights.update_layout(
-            height=400,
-            showlegend=False,
-            margin=dict(l=20, r=20, t=50, b=70),
-            xaxis_title="LED 通道",
-            yaxis_title="输出比例 (%)",
-            yaxis_range=[0, 112],
-        )
-        st.plotly_chart(fig_weights, use_container_width=True)
-    with c2:
-        # Plot target vs current vs compensated spectrum curves
-        comp_rows = []
-        for wl, t_val, n_val, c_val in zip(WAVELENGTHS, compensation.target_spectrum, compensation.current_spectrum, compensation.compensated_spectrum):
-            comp_rows.append({"波长(nm)": int(wl), "相对强度": float(t_val), "光谱曲线": "目标光谱"})
-            comp_rows.append({"波长(nm)": int(wl), "相对强度": float(n_val), "光谱曲线": "当前室内自然光"})
-            comp_rows.append({"波长(nm)": int(wl), "相对强度": float(c_val), "光谱曲线": "合成后室内光谱"})
-        comp_df = pd.DataFrame(comp_rows)
-
-        fig_comp = px.line(
-            comp_df,
-            x="波长(nm)",
-            y="相对强度",
-            color="光谱曲线",
-            title="目标相对光谱、室内自然光贡献及补光后合成光谱比对",
-            color_discrete_map={"目标光谱": "#111111", "当前室内自然光": "#1f77b4", "合成后室内光谱": "#2f9e44"},
-        )
-        fig_comp.update_traces(line=dict(width=3))
-        fig_comp.update_layout(height=400, hovermode="x unified", margin=dict(l=20, r=20, t=50, b=20), legend_title_text="")
-        st.plotly_chart(fig_comp, use_container_width=True)
-
-    # Detailed dataframes for compensation
-    st.subheader("通道作用说明与比例清单")
-    rec_frame = channel_recommendation_frame(compensation.channel_weights)
-    st.dataframe(
-        rec_frame[["通道", "峰值波长/nm", "推荐比例", "输出百分比", "光谱作用"]],
-        use_container_width=True,
-        hide_index=True,
+    sample_pos = st.session_state.get("sample_pos", 0)
+    pred_spec = result.y_pred_spectrum[sample_pos]
+    compensation = compute_compensation(
+        current_spectrum=pred_spec,
+        scene=scene,
+        target_lux=float(target_lux),
+        outdoor_lux=float(outdoor_lux),
     )
 
-    st.subheader("分波段 RMSE 误差评估 (照明质量量化)")
-    band_err = band_error_frame(compensation)
-    band_err_long = band_err.melt(id_vars="波段", value_vars=["补偿前RMSE", "补偿后RMSE"], var_name="阶段", value_name="RMSE")
-    
-    c_left, c_right = st.columns([1.1, 0.9])
-    with c_left:
-        st.dataframe(band_err, use_container_width=True, hide_index=True)
-    with c_right:
-        fig_band = px.bar(
-            band_err_long,
-            x="波段",
-            y="RMSE",
-            color="阶段",
-            barmode="group",
-            title="各物理波段补光前后的残差对比",
-            color_discrete_map={"补偿前RMSE": "#d95f02", "补偿后RMSE": "#1b9e77"},
-        )
-        fig_band.update_layout(height=260, margin=dict(l=20, r=20, t=40, b=20), xaxis_title="", yaxis_title="RMSE")
-        st.plotly_chart(fig_band, use_container_width=True)
+    m1, m2, m3 = st.columns(3)
+    m1.metric("补偿前 RMSE", f"{compensation.before_rmse:.4f}")
+    m2.metric("补偿后 RMSE", f"{compensation.after_rmse:.4f}")
+    m3.metric("误差下降", f"{compensation.improvement_percent:.1f}%")
 
-    # Premium CIE color halo simulation card
-    st.divider()
-    st.subheader("CIE 1964 标准色度空间映射及光色对比")
-    st.caption("注：此图表仅为数值仿真模拟，受色彩转换限制及显示设备偏差影响，可能与实际光色效果存在较大不一致。")
-    color_comp = light_color_comparison_frame(compensation)
-    
-    st.dataframe(color_comp, use_container_width=True, hide_index=True)
-    
-    st.pyplot(plot_light_halo_comparison(compensation), clear_figure=True)
+    left, right = st.columns([1.6, 1])
+    with left:
+        st.pyplot(plot_compensation_result(compensation), clear_figure=True)
+    with right:
+        st.markdown("七通道 LED 输出比例：")
+        rec = channel_recommendation_frame(compensation.channel_weights)
+        st.dataframe(
+            rec[["通道", "峰值波长/nm", "输出百分比"]],
+            width="stretch",
+            hide_index=True,
+        )
+
+    with st.expander("分波段误差与补偿明细"):
+        st.dataframe(band_error_frame(compensation), width="stretch", hide_index=True)
+        st.dataframe(compensation_summary_frame(compensation), width="stretch", hide_index=True)
+
+st.caption(
+    "说明：本系统为课程设计演示。天气特征为按地点和时间对齐的历史数据；"
+    "光谱估计不能替代现场光谱仪实测；LED 补偿为算法演示，未接入真实硬件。"
+)
