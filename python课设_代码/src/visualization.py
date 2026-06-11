@@ -70,8 +70,11 @@ def plot_weather_spectrum_compare(df: pd.DataFrame, save_path: str | Path | None
         if subset.empty:
             continue
         mean_spectrum = subset[SPECTRUM_COLUMNS].mean().to_numpy(dtype=float)
+        max_value = float(mean_spectrum.max())
+        if max_value > 0:
+            mean_spectrum = mean_spectrum / max_value
         ax.plot(WAVELENGTHS, mean_spectrum, label=weather, linewidth=2.2, color=palette[weather])
-    ax.set_title("不同天气下的平均相对光谱")
+    ax.set_title("不同天气下的平均相对光谱（实测均值归一化）")
     ax.set_xlabel("波长 / nm")
     ax.set_ylabel("相对强度")
     ax.legend(title="天气")
@@ -84,7 +87,7 @@ def plot_hourly_lux(df: pd.DataFrame, save_path: str | Path | None = None) -> pl
     hourly = df.groupby("hour", as_index=False)["outdoor_lux"].mean()
     fig, ax = plt.subplots(figsize=(8.2, 4.4))
     ax.plot(hourly["hour"], hourly["outdoor_lux"], marker="o", color="#2f9e44", linewidth=2.2)
-    ax.set_title("一天内模拟室外照度变化")
+    ax.set_title("一天内实测室外照度变化")
     ax.set_xlabel("小时")
     ax.set_ylabel("平均室外照度 / lux")
     ax.set_xticks(hourly["hour"])
@@ -118,8 +121,11 @@ def plot_pca_variance(pca: object, save_path: str | Path | None = None) -> plt.F
 
 
 def plot_model_compare(metrics: pd.DataFrame, save_path: str | Path | None = None) -> plt.Figure:
+    """五个模型的 RMSE、R² 与训练时间对比。"""
     configure_plot_style()
-    fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.4))
+    has_time = "train_time_s" in metrics.columns
+    n_panels = 3 if has_time else 2
+    fig, axes = plt.subplots(1, n_panels, figsize=(5.2 * n_panels, 4.4))
     sns.barplot(data=metrics, x="model", y="RMSE", ax=axes[0], color="#4c78a8")
     axes[0].set_title("模型 RMSE 对比")
     axes[0].set_xlabel("")
@@ -131,6 +137,14 @@ def plot_model_compare(metrics: pd.DataFrame, save_path: str | Path | None = Non
     axes[1].set_xlabel("")
     axes[1].set_ylabel("R²")
     axes[1].tick_params(axis="x", rotation=25)
+
+    if has_time:
+        sns.barplot(data=metrics, x="model", y="train_time_s", ax=axes[2], color="#f28e2b")
+        axes[2].set_title("模型训练时间对比")
+        axes[2].set_xlabel("")
+        axes[2].set_ylabel("训练时间 / s")
+        axes[2].set_yscale("log")
+        axes[2].tick_params(axis="x", rotation=25)
     fig.tight_layout()
     return save_figure(fig, save_path)
 
@@ -142,9 +156,9 @@ def plot_prediction_compare(
 ) -> plt.Figure:
     configure_plot_style()
     fig, ax = plt.subplots(figsize=(8.4, 4.8))
-    ax.plot(WAVELENGTHS, true_spectrum, label="模拟真实光谱", linewidth=2.4, color="#1f77b4")
+    ax.plot(WAVELENGTHS, true_spectrum, label="实测光谱", linewidth=2.4, color="#1f77b4")
     ax.plot(WAVELENGTHS, pred_spectrum, label="模型预测光谱", linewidth=2.2, linestyle="--", color="#d62728")
-    ax.set_title("预测光谱与模拟真实光谱对比")
+    ax.set_title("预测光谱与实测光谱对比")
     ax.set_xlabel("波长 / nm")
     ax.set_ylabel("相对强度")
     ax.set_ylim(0, max(1.08, float(np.max(true_spectrum)) * 1.05, float(np.max(pred_spectrum)) * 1.05))
