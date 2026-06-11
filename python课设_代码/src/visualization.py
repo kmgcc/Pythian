@@ -13,14 +13,14 @@ except ImportError as exc:  # pragma: no cover - depends on local runtime
         "缺少可视化依赖 matplotlib 或 seaborn。请先运行 pip install -r requirements.txt 后再生成图表。"
     ) from exc
 
-from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS, natural_daylight_reference
+from .spectrum_utils import SPECTRUM_COLUMNS, WAVELENGTHS
 from .lighting_compensation import (
     CHANNEL_NAMES,
     CompensationResult,
     band_error_frame,
     build_led_channels,
-    dual_white_reference_spectrum,
 )
+from .application_demo import ApplicationDemo, color_preview_items
 
 
 def configure_plot_style() -> None:
@@ -239,149 +239,75 @@ def plot_band_error_reduction(
     return save_figure(fig, save_path)
 
 
-def _cie_gaussian(
-    wavelengths: np.ndarray,
-    center: float,
-    left_scale: float,
-    right_scale: float,
-) -> np.ndarray:
-    scale = np.where(wavelengths < center, left_scale, right_scale)
-    return np.exp(-0.5 * np.square((wavelengths - center) * scale))
-
-
-def spectrum_to_srgb(spectrum: np.ndarray, wavelengths: np.ndarray | None = None) -> np.ndarray:
-    """Convert a visible spectrum to display RGB using the CIE 1964 10-degree Supplementary Standard Observer CMFs with chromatic adaptation."""
-    wavelengths = WAVELENGTHS if wavelengths is None else np.asarray(wavelengths, dtype=float)
-    values = np.clip(np.asarray(spectrum, dtype=float), 0.0, None)
-    
-    # CIE 1964 10-degree Color Matching Functions (Wyman et al. 2013 sum of Gaussians fit)
-    x_bar = (
-        0.385 * _cie_gaussian(wavelengths, 445.0, 0.022, 0.022)
-        + 0.941 * _cie_gaussian(wavelengths, 595.0, 0.032, 0.032)
-        + 0.343 * _cie_gaussian(wavelengths, 635.0, 0.030, 0.030)
-    )
-    y_bar = (
-        0.821 * _cie_gaussian(wavelengths, 555.0, 0.024, 0.024)
-        + 0.286 * _cie_gaussian(wavelengths, 520.0, 0.035, 0.035)
-    )
-    z_bar = (
-        1.217 * _cie_gaussian(wavelengths, 440.0, 0.028, 0.028)
-        + 0.681 * _cie_gaussian(wavelengths, 465.0, 0.035, 0.035)
-    )
-    
-    # Raw XYZ calculation
-    xyz = np.array(
-        [
-            float(np.sum(values * x_bar)),
-            float(np.sum(values * y_bar)),
-            float(np.sum(values * z_bar)),
-        ]
-    )
-    
-    # Real measured natural-daylight reference XYZ for white-balance reference
-    base_spectrum = natural_daylight_reference(wavelengths)
-    xyz_ref = np.array(
-        [
-            float(np.sum(base_spectrum * x_bar)),
-            float(np.sum(base_spectrum * y_bar)),
-            float(np.sum(base_spectrum * z_bar)),
-        ]
-    )
-    
-    # Target D65 white point coordinates in CIE 1964 10-degree space
-    xyz_target = np.array([0.9481, 1.0, 1.0730])
-    
-    # Chromatic adaptation (von Kries adaptation in XYZ space)
-    # This ensures the base spectrum maps perfectly to white/D65 on the display
-    xyz_adapted = xyz * (xyz_target / xyz_ref)
-    
-    # Convert adapted XYZ to sRGB using standard D65 transformation matrix
-    linear_rgb = np.array(
-        [
-            3.2406 * xyz_adapted[0] - 1.5372 * xyz_adapted[1] - 0.4986 * xyz_adapted[2],
-            -0.9689 * xyz_adapted[0] + 1.8758 * xyz_adapted[1] + 0.0415 * xyz_adapted[2],
-            0.0557 * xyz_adapted[0] - 0.2040 * xyz_adapted[1] + 1.0570 * xyz_adapted[2],
-        ]
-    )
-    linear_rgb = np.clip(linear_rgb, 0.0, None)
-    if float(linear_rgb.max()) > 0:
-        linear_rgb = linear_rgb / float(linear_rgb.max())
-    srgb = np.where(
-        linear_rgb <= 0.0031308,
-        12.92 * linear_rgb,
-        1.055 * np.power(linear_rgb, 1 / 2.4) - 0.055,
-    )
-    return np.clip(srgb, 0.0, 1.0)
-
-
-def light_color_comparison_frame(result: CompensationResult) -> pd.DataFrame:
-    dual_white = dual_white_reference_spectrum(result)
-    rows = [
-        ("目标太阳光", result.target_spectrum, 0.0),
-        ("预测补偿混光", result.compensated_spectrum, result.after_rmse),
-        (
-            "传统双色温混光",
-            dual_white,
-            float(np.sqrt(np.mean((result.target_spectrum - dual_white) ** 2))),
-        ),
-    ]
-    data = []
-    for name, spectrum, error in rows:
-        rgb = spectrum_to_srgb(spectrum)
-        data.append(
-            {
-                "光状态": name,
-                "显示色": "#{:02X}{:02X}{:02X}".format(*(np.round(rgb * 255).astype(int))),
-                "相对光谱RMSE": round(error, 4),
-            }
-        )
-    return pd.DataFrame(data)
-
-
-def _halo_image(color: np.ndarray, size: int = 280) -> np.ndarray:
-    yy, xx = np.mgrid[-1:1:complex(size), -1:1:complex(size)]
-    radius = np.sqrt(xx * xx + yy * yy)
-    core = np.clip(1.0 - radius, 0.0, 1.0)
-    glow = np.clip(1.0 - radius / 1.08, 0.0, 1.0) ** 1.35
-    ring = np.exp(-0.5 * np.square((radius - 0.62) / 0.20)) * 0.18
-    alpha = np.clip(0.08 + 0.92 * core ** 0.58 + ring, 0.0, 1.0) * (radius <= 1.0)
-    background = np.zeros((size, size, 3), dtype=float)
-    halo = background + color.reshape(1, 1, 3) * (0.26 * glow[..., None])
-    halo = halo * (1 - alpha[..., None]) + color.reshape(1, 1, 3) * alpha[..., None]
-    return np.clip(halo, 0.0, 1.0)
-
-
-def plot_light_halo_comparison(
-    result: CompensationResult,
+def plot_application_spectra(
+    demo: ApplicationDemo,
     save_path: str | Path | None = None,
 ) -> plt.Figure:
+    """应用演示的四条光谱：目标 / 预测自然光室内贡献 / 多通道补偿 / 双色温对照。
+
+    四条曲线在同一比例空间：目标光谱为 1 量级，预测自然光乘以室内自然光占比，
+    两种补偿方案都是在它之上叠加 LED 混光后的合成光谱。
+    """
     configure_plot_style()
-    dual_white = dual_white_reference_spectrum(result)
-    compensated_error = result.after_rmse
-    dual_error = float(np.sqrt(np.mean((result.target_spectrum - dual_white) ** 2)))
-    items = [
-        ("目标太阳光", result.target_spectrum, 0.0),
-        ("预测补偿混光", result.compensated_spectrum, compensated_error),
-        ("传统双色温混光", dual_white, dual_error),
-    ]
-    fig, axes = plt.subplots(1, 3, figsize=(10.8, 3.9), facecolor="#050505")
-    for ax, (label, spectrum, error) in zip(axes, items):
-        rgb = spectrum_to_srgb(spectrum)
-        ax.imshow(_halo_image(rgb))
-        ax.set_title(label, fontsize=13, color="#f4f4f5")
-        ax.text(
-            0.5,
-            -0.08,
-            f"综合色差 RMSE: {error:.4f}",
-            transform=ax.transAxes,
-            ha="center",
-            va="top",
-            fontsize=10,
-            color="#d4d4d8",
-        )
-        ax.set_facecolor("#050505")
+    fig, ax = plt.subplots(figsize=(8.8, 5.0))
+    ax.plot(WAVELENGTHS, demo.target_spectrum, label="Target spectrum", linewidth=2.5, color="#111111")
+    ax.plot(
+        WAVELENGTHS,
+        demo.compensation.current_spectrum,
+        label="Predicted daylight (indoor)",
+        linewidth=2.0,
+        linestyle="--",
+        color="#4c78a8",
+    )
+    ax.plot(
+        WAVELENGTHS,
+        demo.compensation.compensated_spectrum,
+        label="Compensated LED spectrum",
+        linewidth=2.2,
+        color="#2f9e44",
+    )
+    ax.plot(
+        WAVELENGTHS,
+        demo.dual_cct.combined_spectrum,
+        label="Traditional dual-CCT LED",
+        linewidth=2.0,
+        color="#e07b39",
+    )
+    ax.set_title(f"应用演示光谱对比 —— {demo.preset_name}")
+    ax.set_xlabel("Wavelength (nm)")
+    ax.set_ylabel("Relative intensity")
+    ax.legend()
+    return save_figure(fig, save_path)
+
+
+def plot_color_circles(
+    demo: ApplicationDemo,
+    save_path: str | Path | None = None,
+    include_target: bool = True,
+) -> plt.Figure:
+    """屏幕白圆近似色度对比：统一大小、统一背景、亮度归一化后只看色度差异。
+
+    屏幕颜色仅为根据光谱计算得到的近似色度预览，不能替代真实光谱视觉效果；
+    不同光谱可能在屏幕上显示为相近颜色，但其光谱组成仍然不同。
+    """
+    configure_plot_style()
+    items = color_preview_items(demo, include_target=include_target)
+    background = "#26262a"
+    fig, axes = plt.subplots(1, len(items), figsize=(2.9 * len(items), 3.6), facecolor=background)
+    for ax, (name, _spectrum, note, rgb) in zip(np.atleast_1d(axes), items):
+        ax.set_facecolor(background)
+        ax.add_patch(plt.Circle((0.5, 0.56), 0.34, color=rgb))
+        ax.text(0.5, 0.13, name, ha="center", va="center", fontsize=12, color="#f4f4f5")
+        ax.text(0.5, 0.03, note, ha="center", va="center", fontsize=10, color="#c9c9cf")
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_aspect("equal")
         ax.set_axis_off()
-    fig.suptitle("太阳光颜色与室内混光效果模拟（光谱真实映射）", y=0.98, fontsize=15, color="#f4f4f5")
+    fig.suptitle(
+        f"近似色度预览（CIE 2015 10° 观察者，亮度归一化）—— {demo.preset_name}",
+        fontsize=13,
+        color="#f4f4f5",
+    )
     fig.tight_layout()
     return save_figure(fig, save_path)
 
