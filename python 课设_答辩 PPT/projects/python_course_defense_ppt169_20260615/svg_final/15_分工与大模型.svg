@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7" />
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 15</text>
+    <path fill="#64748B" d="M61.50,65 H108.50 A1.50,1.50 0 0 1 110,66.50 V66.50 A1.50,1.50 0 0 1 108.50,68 H61.50 A1.50,1.50 0 0 1 60,66.50 V66.50 A1.50,1.50 0 0 1 61.50,65 Z" />
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">小组分工与大模型使用</text>
+  </g>
+
+  
+  <g id="division">
+    <path fill="#FFF8EE" d="M72,130 H608 A12,12 0 0 1 620,142 V598 A12,12 0 0 1 608,610 H72 A12,12 0 0 1 60,598 V142 A12,12 0 0 1 72,130 Z" />
+    <path fill="#64748B" d="M62,130 H618 A2,2 0 0 1 620,132 V133 A2,2 0 0 1 618,135 H62 A2,2 0 0 1 60,133 V132 A2,2 0 0 1 62,130 Z" />
+    <text x="80" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#64748B">小组分工</text>
+
+    <path fill="#4A90D9" fill-opacity="0.06" d="M88,195 H592 A8,8 0 0 1 600,203 V267 A8,8 0 0 1 592,275 H88 A8,8 0 0 1 80,267 V203 A8,8 0 0 1 88,195 Z" />
+    <text x="100" y="225" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#4A90D9">李安逸</text>
+    <text x="100" y="255" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">负责数据收集与处理、数据调整、可视化调整、</text>
+    <text x="100" y="278" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">课程报告撰稿与编写。</text>
+
+    <path fill="#7CB342" fill-opacity="0.06" d="M88,290 H592 A8,8 0 0 1 600,298 V362 A8,8 0 0 1 592,370 H88 A8,8 0 0 1 80,362 V298 A8,8 0 0 1 88,290 Z" />
+    <text x="100" y="320" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#7CB342">黄奕滔</text>
+    <text x="100" y="350" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">负责数据处理、代码实现、可视化实现、</text>
+    <text x="100" y="373" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">课程报告检查和补充。</text>
+
+    <path fill="#D4940A" fill-opacity="0.06" d="M88,385 H592 A8,8 0 0 1 600,393 V457 A8,8 0 0 1 592,465 H88 A8,8 0 0 1 80,457 V393 A8,8 0 0 1 88,385 Z" />
+    <text x="100" y="415" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D4940A">共同完成</text>
+    <text x="100" y="445" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">主题讨论、文献查阅、幻灯片制作、答辩准备、</text>
+    <text x="100" y="468" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">结果检查和最终材料整理。</text>
+
+    <line x1="80" y1="490" x2="580" y2="490" stroke="#E8E0D4" stroke-width="1" />
+    <text x="80" y="520" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">课程名称：Python 应用开发基础</text>
+    <text x="80" y="548" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">第24组</text>
+  </g>
+
+  
+  <g id="ai-usage">
+    <path fill="#FFF8EE" d="M662,130 H1208 A12,12 0 0 1 1220,142 V598 A12,12 0 0 1 1208,610 H662 A12,12 0 0 1 650,598 V142 A12,12 0 0 1 662,130 Z" />
+    <path fill="#8B6DB0" d="M652,130 H1218 A2,2 0 0 1 1220,132 V133 A2,2 0 0 1 1218,135 H652 A2,2 0 0 1 650,133 V132 A2,2 0 0 1 652,130 Z" />
+    <text x="670" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#8B6DB0">大模型使用情况</text>
+
+    <text x="670" y="205" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="19" fill="#2D2A26">使用大模型辅助的环节：</text>
+
+    <path fill="#8B6DB0" fill-opacity="0.06" d="M678,225 H1192 A8,8 0 0 1 1200,233 V272 A8,8 0 0 1 1192,280 H678 A8,8 0 0 1 670,272 V233 A8,8 0 0 1 678,225 Z" />
+    <text x="690" y="258" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">数据源收集和汇总</text>
+
+    <path fill="#D46B8C" fill-opacity="0.06" d="M678,290 H1192 A8,8 0 0 1 1200,298 V337 A8,8 0 0 1 1192,345 H678 A8,8 0 0 1 670,337 V298 A8,8 0 0 1 678,290 Z" />
+    <text x="690" y="323" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">报告结构整理和辅助编写</text>
+
+    <path fill="#E8842A" fill-opacity="0.06" d="M678,355 H1192 A8,8 0 0 1 1200,363 V402 A8,8 0 0 1 1192,410 H678 A8,8 0 0 1 670,402 V363 A8,8 0 0 1 678,355 Z" />
+    <text x="690" y="388" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">代码注释与编写辅助</text>
+
+    <path fill="#2AA3A0" fill-opacity="0.06" d="M678,420 H1192 A8,8 0 0 1 1200,428 V467 A8,8 0 0 1 1192,475 H678 A8,8 0 0 1 670,467 V428 A8,8 0 0 1 678,420 Z" />
+    <text x="690" y="453" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">可视化表达相关代码编写辅助</text>
+
+    <line x1="670" y1="495" x2="1200" y2="495" stroke="#E8E0D4" stroke-width="1" />
+    <text font-size="17" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" fill="#8C8578" x="670" y="528">项目核心思想、计划和整体方案</text><text font-size="17" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" fill="#8C8578" x="670" y="554">由我们队员讨论完成，模型和结果</text><text font-size="17" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" fill="#8C8578" x="670" y="580">全部由 Python 代码根据机器学习</text><text font-size="17" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" fill="#8C8578" x="670" y="606">算法生成。</text></g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">15 / 15</text>
+  </g>
+</svg>

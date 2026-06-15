@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 15</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#64748B"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">小组分工与大模型使用</text>
+  </g>
+
+  <!-- Left: Division -->
+  <g id="division">
+    <rect x="60" y="130" width="560" height="480" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="560" height="5" rx="2" fill="#64748B"/>
+    <text x="80" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#64748B">小组分工</text>
+
+    <rect x="80" y="195" width="520" height="80" rx="8" fill="#4A90D9" fill-opacity="0.06"/>
+    <text x="100" y="225" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#4A90D9">李安逸</text>
+    <text x="100" y="255" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">负责数据收集与处理、数据调整、可视化调整、</text>
+    <text x="100" y="278" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">课程报告撰稿与编写。</text>
+
+    <rect x="80" y="290" width="520" height="80" rx="8" fill="#7CB342" fill-opacity="0.06"/>
+    <text x="100" y="320" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#7CB342">黄奕滔</text>
+    <text x="100" y="350" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">负责数据处理、代码实现、可视化实现、</text>
+    <text x="100" y="373" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">课程报告检查和补充。</text>
+
+    <rect x="80" y="385" width="520" height="80" rx="8" fill="#D4940A" fill-opacity="0.06"/>
+    <text x="100" y="415" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D4940A">共同完成</text>
+    <text x="100" y="445" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">主题讨论、文献查阅、幻灯片制作、答辩准备、</text>
+    <text x="100" y="468" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">结果检查和最终材料整理。</text>
+
+    <line x1="80" y1="490" x2="580" y2="490" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="80" y="520" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">课程名称：Python 应用开发基础</text>
+    <text x="80" y="548" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">第24组</text>
+  </g>
+
+  <!-- Right: AI usage -->
+  <g id="ai-usage">
+    <rect x="650" y="130" width="570" height="480" rx="12" fill="#FFF8EE"/>
+    <rect x="650" y="130" width="570" height="5" rx="2" fill="#8B6DB0"/>
+    <text x="670" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#8B6DB0">大模型使用情况</text>
+
+    <text x="670" y="205" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="19" fill="#2D2A26">使用大模型辅助的环节：</text>
+
+    <rect x="670" y="225" width="530" height="55" rx="8" fill="#8B6DB0" fill-opacity="0.06"/>
+    <text x="690" y="258" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">数据源收集和汇总</text>
+
+    <rect x="670" y="290" width="530" height="55" rx="8" fill="#D46B8C" fill-opacity="0.06"/>
+    <text x="690" y="323" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">报告结构整理和辅助编写</text>
+
+    <rect x="670" y="355" width="530" height="55" rx="8" fill="#E8842A" fill-opacity="0.06"/>
+    <text x="690" y="388" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">代码注释与编写辅助</text>
+
+    <rect x="670" y="420" width="530" height="55" rx="8" fill="#2AA3A0" fill-opacity="0.06"/>
+    <text x="690" y="453" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">可视化表达相关代码编写辅助</text>
+
+    <line x1="670" y1="495" x2="1200" y2="495" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="670" y="528" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#8C8578">
+      <tspan x="670" dy="0">项目核心思想、计划和整体方案</tspan>
+      <tspan x="670" dy="26">由我们队员讨论完成，模型和结果</tspan>
+      <tspan x="670" dy="26">全部由 Python 代码根据机器学习</tspan>
+      <tspan x="670" dy="26">算法生成。</tspan>
+    </text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">15 / 15</text>
+  </g>
+</svg>

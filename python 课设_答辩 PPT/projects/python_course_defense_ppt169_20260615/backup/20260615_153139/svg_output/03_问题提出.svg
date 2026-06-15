@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="flowArrow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E06B5E"/>
+      <stop offset="100%" stop-color="#E8842A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <!-- Header -->
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="11" fill="#B0A898">COURSE DEFENSE · 03</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#E06B5E"/>
+    <text x="60" y="100" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="bold" fill="#2D2A26">光谱有价值，但直接测量成本较高</text>
+  </g>
+
+  <!-- Problem statement -->
+  <g id="problem">
+    <text x="60" y="155" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">
+      如果要获取真实光谱，通常需要专业光谱仪，难以在普通家庭、教室或办公室中普及。
+    </text>
+    <text x="60" y="185" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">
+      因此，本项目尝试用更容易获得的环境特征，通过机器学习估计自然光相对光谱。
+    </text>
+  </g>
+
+  <!-- Flow diagram -->
+  <g id="flow-diagram">
+    <!-- Input box -->
+    <rect x="60" y="240" width="220" height="200" rx="12" fill="#FFF8EE"/>
+    <text x="170" y="275" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E" text-anchor="middle">输入</text>
+    <text x="80" y="310" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">天气类别</text>
+    <text x="80" y="335" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">时间 / 月份</text>
+    <text x="80" y="360" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">地点</text>
+    <text x="80" y="385" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">太阳高度角 / 方位角</text>
+    <text x="80" y="410" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">室外照度</text>
+
+    <!-- Arrow 1 -->
+    <path d="M290,340 L340,340" stroke="url(#flowArrow)" stroke-width="3" fill="none" marker-end="url(#arrowHead)"/>
+    <defs>
+      <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#E06B5E"/>
+      </marker>
+    </defs>
+
+    <!-- Model box -->
+    <rect x="350" y="270" width="200" height="140" rx="12" fill="#E06B5E" fill-opacity="0.1"/>
+    <text x="450" y="320" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E" text-anchor="middle">机器学习</text>
+    <text x="450" y="350" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E" text-anchor="middle">回归模型</text>
+    <text x="450" y="385" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="14" fill="#8C8578" text-anchor="middle">PCA 逆变换</text>
+
+    <!-- Arrow 2 -->
+    <path d="M560,340 L610,340" stroke="url(#flowArrow)" stroke-width="3" fill="none" marker-end="url(#arrowHead)"/>
+
+    <!-- Output box -->
+    <rect x="620" y="260" width="200" height="160" rx="12" fill="#FFF8EE"/>
+    <text x="720" y="300" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E" text-anchor="middle">输出</text>
+    <text x="640" y="335" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">自然光相对光谱</text>
+    <text x="640" y="360" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">380–780 nm</text>
+    <text x="640" y="385" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">41 个波长点</text>
+
+    <!-- Arrow 3 -->
+    <path d="M830,340 L880,340" stroke="url(#flowArrow)" stroke-width="3" fill="none" marker-end="url(#arrowHead)"/>
+
+    <!-- Application box -->
+    <rect x="890" y="260" width="220" height="160" rx="12" fill="#FFF8EE"/>
+    <text x="1000" y="300" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E" text-anchor="middle">应用</text>
+    <text x="910" y="335" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">目标光谱 − 自然光</text>
+    <text x="910" y="360" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">= 需要补偿的光谱</text>
+    <text x="910" y="390" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">→ 七通道 LED 补偿</text>
+  </g>
+
+  <!-- Goal statement -->
+  <rect x="60" y="490" width="1050" height="60" rx="10" fill="#E06B5E" fill-opacity="0.06"/>
+  <text x="80" y="525" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#E06B5E">
+    一句话目标：输入低成本环境特征，输出自然光相对光谱，并进一步用于照明补偿。
+  </text>
+
+  <!-- Footer -->
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="11" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="11" fill="#B0A898" text-anchor="end">03 / 13</text>
+  </g>
+</svg>

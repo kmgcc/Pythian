@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="roseAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D46B8C"/>
+      <stop offset="100%" stop-color="#D46B8C" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <!-- Header -->
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="11" fill="#B0A898">COURSE DEFENSE · 12</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#D46B8C"/>
+    <text x="60" y="100" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="bold" fill="#2D2A26">七通道 LED 比双色温更细致</text>
+  </g>
+
+  <!-- Compensation explanation -->
+  <g id="compensation-explain">
+    <rect x="60" y="130" width="1160" height="130" rx="12" fill="#FFF8EE"/>
+
+    <text x="80" y="165" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D46B8C">补偿思路</text>
+    <text x="80" y="195" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">
+      目标光谱 − 预测自然光贡献 = 需要人工补偿的光谱 → 非负最小二乘求 7 通道比例
+    </text>
+
+    <line x1="500" y1="145" x2="500" y2="250" stroke="#E8E0D4" stroke-width="1"/>
+
+    <text x="520" y="165" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D46B8C">七通道 LED</text>
+    <text x="520" y="195" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">深蓝 · 青 · 绿 · 琥珀 · 红 · 暖白 · 冷白</text>
+    <text x="520" y="220" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">通道更多，可按波段局部补偿</text>
+    <text x="520" y="245" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="14" fill="#8C8578">课程定位：算法演示，暂未接入真实硬件</text>
+  </g>
+
+  <!-- Compensation chart -->
+  <g id="compensation-chart">
+    <rect x="60" y="280" width="1160" height="330" rx="12" fill="#FFF8EE"/>
+    <image href="../images/compensation_result.png" x="70" y="290" width="1140" height="310" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
+  <!-- Key insight -->
+  <rect x="60" y="625" width="1160" height="45" rx="8" fill="#D46B8C" fill-opacity="0.08"/>
+  <text x="80" y="653" font-family="Microsoft YaHei, Arial, sans-serif" font-size="17" font-weight="bold" fill="#D46B8C">
+    多通道 LED 自由度更多，能对蓝光、青绿、黄绿和红光波段做更细的补偿
+  </text>
+
+  <!-- Footer -->
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="11" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="11" fill="#B0A898" text-anchor="end">12 / 13</text>
+  </g>
+</svg>

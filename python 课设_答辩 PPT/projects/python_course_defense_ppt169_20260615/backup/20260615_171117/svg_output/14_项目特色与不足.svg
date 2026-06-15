@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 14</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#64748B"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">项目特色与不足</text>
+  </g>
+
+  <!-- Left: Features -->
+  <g id="features">
+    <rect x="60" y="130" width="560" height="480" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="560" height="5" rx="2" fill="#3D8B5E"/>
+    <text x="80" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="24" font-weight="bold" fill="#3D8B5E">项目特色</text>
+
+    <rect x="80" y="195" width="520" height="55" rx="8" fill="#3D8B5E" fill-opacity="0.06"/>
+    <text x="100" y="228" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">1. 使用真实公开天光光谱数据</text>
+
+    <rect x="80" y="260" width="520" height="55" rx="8" fill="#2AA3A0" fill-opacity="0.06"/>
+    <text x="100" y="293" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">2. 明确"环境特征 → PCA → 光谱还原"路径</text>
+
+    <rect x="80" y="325" width="520" height="55" rx="8" fill="#8B6DB0" fill-opacity="0.06"/>
+    <text x="100" y="358" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">3. 覆盖数据处理、PCA、ML、可视化全流程</text>
+
+    <rect x="80" y="390" width="520" height="55" rx="8" fill="#E8842A" fill-opacity="0.06"/>
+    <text x="100" y="423" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">4. 多模型统一比较，按结果选择模型</text>
+
+    <rect x="80" y="455" width="520" height="55" rx="8" fill="#D4940A" fill-opacity="0.06"/>
+    <text x="100" y="488" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">5. 预测光谱用于照明补偿，形成应用闭环</text>
+
+    <rect x="80" y="520" width="520" height="55" rx="8" fill="#D46B8C" fill-opacity="0.06"/>
+    <text x="100" y="553" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">6. 课程知识覆盖完整，可复现</text>
+  </g>
+
+  <!-- Right: Shortcomings -->
+  <g id="shortcomings">
+    <rect x="650" y="130" width="570" height="480" rx="12" fill="#FFF8EE"/>
+    <rect x="650" y="130" width="570" height="5" rx="2" fill="#E06B5E"/>
+    <text x="670" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="24" font-weight="bold" fill="#E06B5E">主要不足</text>
+
+    <rect x="670" y="195" width="530" height="65" rx="8" fill="#E06B5E" fill-opacity="0.06"/>
+    <text x="690" y="230" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">1. 样本集中在少数站点</text>
+    <text x="690" y="252" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">数据来源有限，代表性不够广泛</text>
+
+    <rect x="670" y="275" width="530" height="65" rx="8" fill="#E06B5E" fill-opacity="0.06"/>
+    <text x="690" y="310" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">2. 天气数据与光谱非完全同步</text>
+    <text x="690" y="332" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">天气为对齐的历史特征，非现场测量</text>
+
+    <rect x="670" y="355" width="530" height="65" rx="8" fill="#E06B5E" fill-opacity="0.06"/>
+    <text x="690" y="390" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">3. 模型不能完全替代专业光谱仪</text>
+    <text x="690" y="412" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">估计的是相对光谱形状，非绝对测量</text>
+
+    <rect x="670" y="435" width="530" height="65" rx="8" fill="#E06B5E" fill-opacity="0.06"/>
+    <text x="690" y="470" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">4. 当前是算法演示，未接入硬件</text>
+    <text x="690" y="492" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">暂未接入真实照明硬件验证</text>
+
+    <rect x="670" y="515" width="530" height="65" rx="8" fill="#E06B5E" fill-opacity="0.06"/>
+    <text x="690" y="550" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">5. 补偿效果有待更细的评价</text>
+    <text x="690" y="572" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">可进一步评估舒适度和显色效果</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">14 / 15</text>
+  </g>
+</svg>
