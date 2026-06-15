@@ -167,6 +167,17 @@ def add_card(slide, title, body, x, y, w, h, fill=GREY_1, title_color=ACCENT):
     add_text(slide, body, x + 0.35, y + 0.92, w - 0.70, h - 1.10, 9.6, INK, False, line_spacing=1.05)
 
 
+def add_takeaway(slide, text, x, y, w, h=1.0, fill=ACCENT, color=WHITE):
+    add_rect(slide, x, y, w, h, fill=fill)
+    add_text(slide, text, x + 0.35, y + 0.23, w - 0.70, h - 0.34, 10.2, color, True, line_spacing=1.0)
+
+
+def add_explain_box(slide, title, body, x, y, w, h, fill=GREY_1, title_color=ACCENT):
+    add_rect(slide, x, y, w, h, fill=fill)
+    add_text(slide, title, x + 0.35, y + 0.25, w - 0.70, 0.34, 9.4, title_color, True)
+    add_text(slide, body, x + 0.35, y + 0.78, w - 0.70, h - 0.92, 8.7, INK, False, line_spacing=1.03)
+
+
 def add_arrow(slide, x1, y1, x2, y2, color=ACCENT, width=1.2):
     con = slide.shapes.add_connector(MSO_CONNECTOR.STRAIGHT, Cm(x1), Cm(y1), Cm(x2), Cm(y2))
     con.line.color.rgb = rgb(color)
@@ -183,10 +194,30 @@ def slide_cover(prs):
     add_text(slide, "第24组", 0.62, 17.62, 1.9, 0.4, 9.0, WHITE, True, font=FONT_MONO)
     add_text(slide, "基于真实天光数据的\n自然光光谱估计与\n室内照明补偿设计", 4.15, 2.08, 16.5, 3.95, 28, INK, True, line_spacing=0.90)
     add_text(slide, "课程名称：Python 应用开发基础\n小组成员：李安逸、黄奕滔", 4.22, 6.70, 10.5, 1.25, 12, INK, False, line_spacing=1.2)
+    add_text(slide, "内容主线：光谱问题 → 数据建模 → LED 补偿应用", 4.22, 7.92, 15.0, 0.45, 9.7, GREY_3, True)
     add_rect(slide, 4.20, 8.70, 7.8, 2.15, fill=GREY_1)
     add_metric(slide, "VISIBLE WAVELENGTH POINTS", "41", 4.62, 9.03, 2.3)
     add_metric(slide, "REAL SAMPLES", "5664", 7.06, 9.03, 2.6)
     add_metric(slide, "PCA CUM. VAR.", "98.3%", 10.02, 9.03, 2.0)
+    add_explain_box(
+        slide,
+        "内容概览",
+        "本项目先说明为什么亮度和色温不足以描述照明质量，再说明如何用真实数据训练模型，最后展示预测光谱怎样进入 LED 补偿应用。",
+        4.20,
+        11.35,
+        11.25,
+        2.35,
+    )
+    add_explain_box(
+        slide,
+        "项目定位",
+        "本项目是课程设计中的算法原型，重点展示 Python 数据处理、PCA 降维、模型对比和可视化结果，不把它夸大为已经落地的硬件系统。",
+        4.20,
+        14.10,
+        11.25,
+        2.25,
+        fill=PAPER,
+    )
     add_picture_fit(slide, FIG_DIR / "base_spectrum.png", 16.0, 8.58, 14.6, 7.4)
     add_caption(slide, "图：实测自然光基准光谱曲线", 16.0, 16.18, 8.0)
     add_text(slide, "答辩时间约 6 分钟", 25.1, 0.72, 5.0, 0.4, 8.5, GREY_3, True, align=PP_ALIGN.RIGHT, font=FONT_MONO)
@@ -202,16 +233,37 @@ def slide_background(prs):
         [
             "人长期处于室内，学习、办公和居家场景都依赖人工照明。",
             "照度看亮度，色温看冷暖；不能描述完整波长分布。",
+            "光谱表示各波长能量分布，更接近光照质量本身。",
             "同亮度、同色温下，光谱形状仍可能明显不同。",
         ],
         1.05,
         2.60,
         10.8,
-        row_h=1.05,
-        size=11.4,
+        row_h=0.84,
+        size=10.8,
     )
-    add_rect(slide, 1.05, 6.32, 10.65, 2.15, fill=ACCENT)
-    add_text(slide, "因此，本项目从“光谱”角度描述自然光，\n并把估计结果用于室内补偿。", 1.45, 6.68, 9.65, 1.05, 13.0, WHITE, True, line_spacing=1.0)
+    add_rect(slide, 1.05, 6.18, 10.65, 2.45, fill=ACCENT)
+    add_text(slide, "读图方式：不同天气曲线不完全重合，\n说明自然光光谱会随环境变化。\n因此要用“光谱”而不只用亮度/色温描述。", 1.45, 6.50, 9.65, 1.55, 11.4, WHITE, True, line_spacing=1.0)
+    add_explain_box(
+        slide,
+        "研究切入点",
+        "研究从室内照明场景出发：人长期处于室内，照明质量会影响学习、办公和视觉舒适。亮度和色温虽然直观，但无法说明每个波长的能量分布。",
+        1.05,
+        9.18,
+        10.65,
+        3.10,
+        fill=GREY_1,
+    )
+    add_explain_box(
+        slide,
+        "建模问题",
+        "天气变化会改变自然光光谱形状，因此可以进一步尝试利用天气、时间和太阳位置等环境特征去估计这条光谱曲线。",
+        1.05,
+        12.62,
+        10.65,
+        2.25,
+        fill=PAPER,
+    )
     add_picture_fit(slide, FIG_DIR / "weather_spectrum_compare.png", 13.05, 2.14, 18.0, 13.15)
     add_caption(slide, "关键图 1：不同天气下平均相对光谱存在差异", 13.05, 15.55, 13.5)
     add_footer(slide, 2)
@@ -221,11 +273,21 @@ def slide_goal(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     set_bg(slide)
     add_title(slide, "项目目标：由环境特征估计自然光相对光谱", "03")
-    add_card(slide, "输入", "天气类别、云量、湿度、温度、降水\n时间、月份、地点\n太阳高度角/方位角\n室外水平照度", 1.0, 3.1, 8.2, 5.8)
-    add_card(slide, "输出", "380–780 nm\n每 10 nm 一个点\n共 41 维相对光谱曲线\n模型先预测 PCA 系数，再还原光谱", 12.25, 3.1, 8.2, 5.8)
-    add_card(slide, "应用", "根据目标自然光谱与当前自然光贡献\n计算七通道 LED 推荐比例\n形成“预测 → 补偿 → 对比”的闭环", 23.5, 3.1, 8.2, 5.8)
+    add_card(slide, "输入", "不直接依赖光谱仪\n天气类别、云量、湿度、温度、降水\n时间、月份、地点\n太阳高度角/方位角、室外照度", 1.0, 3.1, 8.2, 5.8)
+    add_card(slide, "输出", "380–780 nm 可见光范围\n每 10 nm 一个点，共 41 维\n关注相对光谱形状\n先预测 PCA 系数，再还原曲线", 12.25, 3.1, 8.2, 5.8)
+    add_card(slide, "应用", "计算“目标光谱 - 当前自然光”\n输出七通道 LED 推荐比例\n对比多通道与传统双色温\n形成预测、补偿、评价闭环", 23.5, 3.1, 8.2, 5.8)
     add_arrow(slide, 9.52, 5.95, 11.55, 5.95)
     add_arrow(slide, 20.78, 5.95, 22.78, 5.95)
+    add_explain_box(
+        slide,
+        "设计思路",
+        "输入端尽量选择低成本、容易获得的环境特征；输出端不直接给一个色温值，而是还原完整相对光谱。这样预测结果才能继续用于光谱级补偿。",
+        3.7,
+        9.05,
+        24.6,
+        1.25,
+        fill=GREY_1,
+    )
     add_rect(slide, 3.7, 10.8, 24.6, 3.15, fill=PAPER, line=GREY_2)
     labels = ["环境特征", "机器学习回归", "PCA逆变换", "光谱曲线", "LED补偿"]
     xs = [4.45, 9.35, 14.45, 19.25, 24.1]
@@ -235,6 +297,7 @@ def slide_goal(prs):
         add_chip(slide, label, x, 11.96, 3.1, fill=fill, color=color)
         if i < len(labels) - 1:
             add_arrow(slide, x + 3.28, 12.27, xs[i + 1] - 0.15, 12.27, color=GREY_3, width=0.75)
+    add_takeaway(slide, "一句话目标：用低成本环境特征估计自然光相对光谱，并服务于室内照明补偿。", 3.7, 14.45, 24.6, h=0.85)
     add_footer(slide, 3)
 
 
@@ -245,13 +308,24 @@ def slide_data(prs):
     add_card(slide, "SKYSPECTRA 实测天光光谱", "Zenodo record 8147546\n水平天光光谱 + 站点、时间、天空状况、太阳位置元数据\n重采样到 380–780 nm / 10 nm", 1.0, 2.45, 9.45, 5.35, fill=GREY_1)
     add_card(slide, "Open-Meteo 历史天气 API", "按观测站经纬度和日期范围查询\n云量、湿度、温度、降水\n按最近整点与光谱测量对齐", 11.3, 2.45, 9.45, 5.35, fill=GREY_1)
     add_card(slide, "公开 LED 光谱数据", "用于构造七通道 LED 补偿模型\n深蓝、青、绿、琥珀、红、暖白、冷白\n只用于应用补偿，不参与模型训练", 21.6, 2.45, 9.45, 5.35, fill=GREY_1)
+    add_explain_box(
+        slide,
+        "数据处理后的建模表",
+        "最终每一行样本都包含：观测时间和地点、天气特征、太阳位置、室外照度，以及 41 个波长点的相对光谱强度。也就是说，模型看到的是“环境条件 → 光谱形状”的配对样本。",
+        1.0,
+        8.10,
+        30.05,
+        1.08,
+        fill=GREY_1,
+    )
     add_rect(slide, 1.0, 9.45, 30.05, 4.3, fill=PAPER, line=GREY_2)
     add_metric(slide, "样本量", "5664", 2.0, 10.25, 4.0)
     add_metric(slide, "光谱维度", "41", 7.05, 10.25, 3.8)
     add_metric(slide, "时间范围", "2016–2018", 11.25, 10.25, 5.8)
     add_metric(slide, "观测站", "2", 18.25, 10.25, 2.8)
     add_metric(slide, "主要站点", "法国沃昂夫兰", 22.0, 10.25, 5.9)
-    add_text(slide, "说明：天气数据为按地点和时间对齐的历史天气特征，不等同于现场同步气象测量。", 2.05, 13.12, 27.2, 0.45, 9.3, GREY_3, False)
+    add_text(slide, "使用原则：估计模型只用天光光谱和环境特征训练；LED 光谱只在补偿应用中使用，避免数据角色混淆。", 2.05, 12.82, 27.2, 0.45, 9.3, INK, True)
+    add_text(slide, "边界说明：天气数据为按地点和时间对齐的历史天气特征，不等同于现场同步气象测量。", 2.05, 13.42, 27.2, 0.45, 9.3, GREY_3, False)
     add_footer(slide, 4)
 
 
@@ -260,17 +334,17 @@ def slide_flow(prs):
     set_bg(slide)
     add_title(slide, "总体技术流程：从真实数据到照明补偿闭环", "05")
     steps = [
-        ("01", "数据下载"),
-        ("02", "清洗重采样"),
-        ("03", "天气对齐"),
-        ("04", "特征工程"),
-        ("05", "PCA"),
-        ("06", "五模型训练"),
-        ("07", "光谱还原"),
-        ("08", "LED 补偿"),
+        ("01", "数据下载", "SKYSPECTRA/API"),
+        ("02", "清洗重采样", "统一波长网格"),
+        ("03", "天气对齐", "最近整点匹配"),
+        ("04", "特征工程", "标准化/独热编码"),
+        ("05", "PCA", "41 维降到 5 维"),
+        ("06", "五模型训练", "统一指标对比"),
+        ("07", "光谱还原", "inverse transform"),
+        ("08", "LED 补偿", "七通道比例"),
     ]
     x0, y0, w, h, gap = 1.05, 3.20, 6.65, 2.25, 1.0
-    for i, (num, label) in enumerate(steps):
+    for i, (num, label, desc) in enumerate(steps):
         row = 0 if i < 4 else 1
         col = i if i < 4 else 7 - i
         x = x0 + col * (w + gap)
@@ -279,7 +353,8 @@ def slide_flow(prs):
         txt_color = WHITE if fill == ACCENT else INK
         add_rect(slide, x, y, w, h, fill=fill)
         add_text(slide, num, x + 0.35, y + 0.30, 1.0, 0.4, 9.4, txt_color, True, font=FONT_MONO)
-        add_text(slide, label, x + 0.35, y + 1.03, w - 0.7, 0.5, 13.0, txt_color, True)
+        add_text(slide, label, x + 0.35, y + 0.92, w - 0.7, 0.42, 12.4, txt_color, True)
+        add_text(slide, desc, x + 0.35, y + 1.48, w - 0.7, 0.34, 8.1, txt_color if fill == ACCENT else GREY_3, False, font=FONT_MONO)
         if i < 3:
             add_arrow(slide, x + w + 0.15, y + 1.12, x + w + gap - 0.20, y + 1.12, color=GREY_3, width=0.75)
         if i == 3:
@@ -288,7 +363,18 @@ def slide_flow(prs):
             x_next = x0 + (col - 1) * (w + gap)
             add_arrow(slide, x - 0.18, y + 1.12, x_next + w + 0.20, y + 1.12, color=GREY_3, width=0.75)
     add_rect(slide, 1.05, 13.40, 30.0, 1.75, fill=PAPER, line=GREY_2)
-    add_text(slide, "核心逻辑：真实数据支撑建模，PCA 降低输出维度，模型预测的光谱再进入七通道 LED 补偿。", 1.55, 13.90, 28.7, 0.42, 11.6, INK, True)
+    add_text(slide, "核心逻辑：真实数据支撑建模，PCA 降低输出维度，模型预测的光谱再进入七通道 LED 补偿。", 1.55, 13.66, 28.7, 0.42, 11.3, INK, True)
+    add_text(slide, "流程特点：每一步都有对应的数据、模型或图表输出，能够支撑完整的课程演示。", 1.55, 14.33, 28.7, 0.38, 9.3, GREY_3, False)
+    add_explain_box(
+        slide,
+        "流程关系",
+        "前半部分把真实数据整理成训练集，中间用 PCA 和回归模型完成光谱估计，后半部分把预测结果接到照明补偿应用里。",
+        1.05,
+        10.65,
+        30.0,
+        1.90,
+        fill=GREY_1,
+    )
     add_footer(slide, 5)
 
 
@@ -300,18 +386,39 @@ def slide_pca(prs):
     add_picture_fit(slide, FIG_DIR / "feature_importance.png", 16.7, 2.25, 14.2, 9.3)
     add_caption(slide, "PCA 解释方差：前 5 个主成分累计约 98.3%", 1.0, 11.78, 12.8)
     add_caption(slide, "随机森林特征重要性：室外照度、云量、太阳位置影响明显", 16.7, 11.78, 14.0)
-    add_rect(slide, 1.0, 13.05, 30.0, 2.05, fill=GREY_1)
+    add_explain_box(
+        slide,
+        "为什么要 PCA",
+        "光谱曲线相邻波长之间变化连续、相关性强，直接预测 41 个输出值会增加模型难度。PCA 把主要变化压缩成少量系数，既保留形状信息，也便于回归模型学习。",
+        1.0,
+        12.20,
+        14.0,
+        1.72,
+        fill=PAPER,
+    )
+    add_explain_box(
+        slide,
+        "特征怎么理解",
+        "特征重要性不是物理因果结论，只说明在当前数据和随机森林模型中，室外照度、云量、太阳方位角等信息对预测光谱形状更有帮助。",
+        16.7,
+        12.20,
+        14.2,
+        1.72,
+        fill=PAPER,
+    )
+    add_rect(slide, 1.0, 14.25, 30.0, 1.35, fill=GREY_1)
     add_bullets(
         slide,
         [
             "输入特征：天气、时间、地点、太阳位置、室外照度；类别特征独热编码，数值特征标准化。",
             "输出目标：模型不直接预测 41 维光谱，而是预测 PCA 主成分系数，再逆变换还原。",
+            "选择依据：前 5 个主成分累计解释约 98.3% 方差，兼顾信息保留和训练难度。",
         ],
         1.45,
-        13.50,
+        14.45,
         28.3,
-        row_h=0.70,
-        size=10.2,
+        row_h=0.38,
+        size=8.4,
     )
     add_footer(slide, 6)
 
@@ -322,6 +429,20 @@ def slide_models(prs, metrics: pd.DataFrame):
     add_title(slide, "模型训练与对比：五个回归模型在同一数据上评价", "07")
     add_picture_fit(slide, FIG_DIR / "model_compare.png", 1.0, 2.15, 19.5, 7.3)
     add_caption(slide, "指标柱状图：RMSE、R²、训练时间", 1.0, 9.55, 10.0)
+    add_rect(slide, 1.0, 10.25, 19.5, 2.0, fill=GREY_1)
+    add_bullets(
+        slide,
+        [
+            "MAE 表示平均偏差；RMSE 对较大误差更敏感；R² 反映解释能力。",
+            "五个模型输入和输出完全一致，因此比较的是模型本身的拟合能力。",
+            "选择模型时不只看 R²，也要结合 RMSE、训练成本和预测稳定性。",
+        ],
+        1.45,
+        10.68,
+        18.5,
+        row_h=0.47,
+        size=8.6,
+    )
     table_data = [["模型", "MAE", "RMSE", "R²", "训练/s"]]
     order = ["Random Forest", "KNN", "MLP", "Decision Tree", "Linear Regression"]
     m = metrics.set_index("model")
@@ -350,7 +471,17 @@ def slide_models(prs, metrics: pd.DataFrame):
                     set_run_font(run, 7.6 if r else 7.8, WHITE if r == 0 else INK, bold=(r == 0 or (r == 1 and c == 0)), font=FONT_LATIN if c == 0 else FONT_MONO)
     add_rect(slide, 21.25, 8.65, 9.85, 2.35, fill=ACCENT)
     add_text(slide, "最终按 RMSE 最小选择随机森林", 21.75, 9.05, 8.8, 0.48, 12.6, WHITE, True)
-    add_text(slide, "KNN 的 MAE 略低，但 RMSE 与预测耗时不占优；MLP 的 R² 略高，但误差更大，稳定性也更敏感。", 21.75, 9.80, 8.75, 0.76, 8.6, WHITE, False, line_spacing=1.0)
+    add_text(slide, "随机森林 RMSE 最小，综合稳定性更好。\nKNN 的 MAE 略低，但 RMSE 与预测耗时不占优；MLP 的 R² 略高，但误差更大。", 21.75, 9.68, 8.75, 1.05, 8.1, WHITE, False, line_spacing=1.0)
+    add_explain_box(
+        slide,
+        "模型选择结论",
+        "线性回归明显落后，说明环境特征到光谱形状不是简单线性关系。单棵决策树也不如随机森林，体现了集成模型在稳定性上的优势。",
+        1.0,
+        12.70,
+        30.1,
+        1.55,
+        fill=PAPER,
+    )
     add_footer(slide, 7)
 
 
@@ -378,6 +509,18 @@ def slide_prediction(prs):
     add_rect(slide, 23.1, 8.20, 8.0, 3.4, fill=ACCENT)
     add_text(slide, "结果观察", 23.55, 8.62, 7.1, 0.35, 10.2, WHITE, True)
     add_text(slide, "示例样本中，预测曲线与实测曲线基本重合。\n模型能够学习自然光相对光谱的主要变化趋势。", 23.55, 9.30, 7.0, 1.32, 8.6, WHITE, False, line_spacing=1.0)
+    add_rect(slide, 23.1, 12.18, 8.0, 1.42, fill=GREY_1)
+    add_text(slide, "结果边界：预测的是相对光谱形状，不能替代现场光谱仪的绝对测量。", 23.55, 12.50, 7.1, 0.55, 8.5, INK, True, line_spacing=1.0)
+    add_explain_box(
+        slide,
+        "结果解读",
+        "图中两条线越接近，说明还原后的光谱形状越接近实测结果。这里不是证明模型永远准确，而是说明在测试样本上，它能抓住自然光光谱的主要起伏。",
+        1.0,
+        14.95,
+        21.2,
+        1.25,
+        fill=GREY_1,
+    )
     add_caption(slide, "关键图 2：实测光谱 vs 模型预测光谱", 1.0, 14.58, 13.8)
     add_footer(slide, 8)
 
@@ -390,11 +533,23 @@ def slide_compensation(prs):
     add_caption(slide, "关键图 3：目标光谱、预测自然光、补偿后光谱与传统双色温方案对比", 1.0, 14.45, 18.0)
     add_rect(slide, 22.4, 2.22, 8.75, 4.7, fill=GREY_1)
     add_text(slide, "补偿思路", 22.85, 2.62, 7.8, 0.35, 10.2, ACCENT, True)
-    add_text(slide, "目标光谱 - 当前自然光贡献\n= 需要人工补偿的光谱", 22.85, 3.33, 7.7, 1.0, 11.0, INK, True, line_spacing=1.0)
-    add_text(slide, "用非负最小二乘计算 LED 通道比例，使自然光 + 人工光尽量接近目标光谱。", 22.85, 4.75, 7.7, 0.85, 9.0, INK, False, line_spacing=1.05)
+    add_text(slide, "目标光谱 - 当前自然光贡献\n= 需要人工补偿的光谱", 22.85, 3.12, 7.7, 0.98, 10.3, INK, True, line_spacing=1.0)
+    add_text(slide, "图表解读：黑线目标、蓝虚线自然光、\n绿线多通道补偿、橙线传统双色温。", 22.85, 4.42, 7.7, 0.95, 8.1, INK, False, line_spacing=1.0)
+    add_text(slide, "算法：非负最小二乘求 7 通道比例。", 22.85, 5.82, 7.7, 0.38, 8.3, GREY_3, False)
     add_rect(slide, 22.4, 7.55, 8.75, 4.95, fill=ACCENT)
     add_text(slide, "七通道 LED", 22.85, 7.98, 7.8, 0.35, 10.2, WHITE, True)
     add_text(slide, "深蓝/蓝光、青光、绿光、琥珀光、红光、暖白、冷白\n\n通道更多，可按波段局部补偿；\n双色温主要调冷暖，光谱自由度较低。", 22.85, 8.60, 7.6, 2.55, 8.4, WHITE, False, line_spacing=1.0)
+    add_text(slide, "课程定位：这里展示的是算法设计方案，暂未接入真实灯具硬件。", 22.85, 12.85, 7.6, 0.52, 8.4, GREY_3, True)
+    add_explain_box(
+        slide,
+        "补偿结论",
+        "多通道 LED 的优势在于自由度更多：不同波段可以分别补。传统双色温方案主要改变冷暖比例，因此在某些波段会更难贴近目标光谱。",
+        1.0,
+        14.95,
+        20.7,
+        1.25,
+        fill=GREY_1,
+    )
     add_footer(slide, 9)
 
 
@@ -441,8 +596,18 @@ def slide_closing(prs):
     add_text(slide, "李安逸", 2.0, 12.22, 3.0, 0.42, 12, INK, True)
     add_text(slide, "课程报告、背景与方法说明、PCA 与模型分析、PPT 逻辑整理与答辩表达", 5.2, 12.20, 24.5, 0.5, 10.2, INK, False)
     add_text(slide, "共同完成：课程答辩、PPT、最终材料整合。", 5.2, 13.36, 24.5, 0.5, 10.2, GREY_3, False)
+    add_explain_box(
+        slide,
+        "项目总结",
+        "本项目是一个完整但谨慎的课程项目：数据是真实的，流程是可复现的，结果能进入应用演示；同时也承认样本、同步天气和硬件验证上的不足。",
+        1.0,
+        14.20,
+        30.1,
+        1.05,
+        fill=GREY_1,
+    )
     add_rect(slide, 1.0, 15.45, 30.1, 1.45, fill=ACCENT)
-    add_text(slide, "总结：本项目把真实天光数据、机器学习光谱估计和室内照明补偿连成了一条可复现的课程设计流程。", 1.55, 15.89, 29.0, 0.52, 12.2, WHITE, True)
+    add_text(slide, "总结：本项目把真实天光数据、机器学习光谱估计和室内照明补偿连成了一条可复现的课程设计流程；它是课程层面的算法原型，不夸大为硬件成品。", 1.55, 15.80, 29.0, 0.68, 11.1, WHITE, True, line_spacing=1.0)
     add_footer(slide, 10)
 
 
