@@ -30,6 +30,7 @@ from .application_demo import (
 from .color_conversion import ensure_cmf_file
 from .data_loader import DATASET_PATH, load_dataset
 from .evaluation import build_metrics_table, select_best_model
+from .hyperparameter_tuning import TuningResult, tune_random_forest
 from .led_spectrum_data import fetch_and_build_dual_white_spectrum
 from .lighting_compensation import (
     band_error_frame,
@@ -85,6 +86,7 @@ class PipelineResult:
     y_pred_spectrum: np.ndarray
     test_indices: np.ndarray
     feature_importance: pd.DataFrame
+    tuning_result: TuningResult | None = None
 
 
 def artifacts_exist() -> bool:
@@ -118,6 +120,49 @@ def train_and_evaluate(dataset: pd.DataFrame, random_state: int = 42) -> Pipelin
     trained = train_all_models(x_train, y_train_pca, x_test, spectrum_pca, random_state=random_state)
     metrics = build_metrics_table(trained, y_test_spectrum)
     best_name = select_best_model(metrics)
+
+    # 随机森林超参数调优：27 组参数 × 5 折交叉验证
+    print("[流水线] 开始随机森林超参数调优（27 组参数 × 5 折交叉验证）...")
+    tuning_result = tune_random_forest(
+        x_train=x_train,
+        y_train_pca=y_train_pca,
+        x_test=x_test,
+        y_test_pca=_y_test_pca,
+        y_test_spectrum=y_test_spectrum,
+        spectrum_pca=spectrum_pca,
+        cv=5,
+        verbose=True,
+    )
+    print("[流水线] 调优完成。")
+
+    # 用调优后的最优参数训练最终模型，更新 trained 字典
+    best_rf_pipeline = tuning_result.best_estimator
+    best_rf_params = tuning_result.best_params
+
+    import time as _time
+    t0 = _time.perf_counter()
+    y_pred_pca_best = best_rf_pipeline.predict(x_test)
+    predict_time_best = _time.perf_counter() - t0
+
+    y_pred_spectrum_best = spectrum_pca.inverse_transform(y_pred_pca_best)
+
+    from .model_training import TrainedModel as _TM
+
+    tuned_name = "Random Forest (调优)"
+    trained[tuned_name] = _TM(
+        name=tuned_name,
+        pipeline=best_rf_pipeline,
+        y_pred_spectrum=y_pred_spectrum_best,
+        train_seconds=tuning_result.best_candidate.train_time_s,
+        predict_seconds=predict_time_best,
+    )
+
+    # 更新 metrics 表，加入调优后模型
+    tuned_metrics = build_metrics_table(trained, y_test_spectrum)
+    metrics = tuned_metrics
+
+    # 更新最佳模型为调优后的随机森林
+    best_name = tuned_name
     predictor = SpectrumPredictor(
         best_model_name=best_name,
         pipeline=trained[best_name].pipeline,
@@ -136,6 +181,7 @@ def train_and_evaluate(dataset: pd.DataFrame, random_state: int = 42) -> Pipelin
         y_pred_spectrum=trained[best_name].y_pred_spectrum,
         test_indices=idx_test,
         feature_importance=feature_importance_frame(trained["Random Forest"]),
+        tuning_result=tuning_result,
     )
 
 

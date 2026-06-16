@@ -23,6 +23,7 @@ from src.application_demo import (
 from src.data_loader import dataset_summary
 from src.evaluation import sample_error_frame
 from src.lighting_compensation import band_error_frame, compensation_summary_frame
+from src.hyperparameter_tuning import tune_random_forest, tuning_summary_text
 from src.pipeline import load_or_train
 from src.spectrum_utils import SCENE_TARGET_LUX, WAVELENGTHS
 from src.visualization import (
@@ -114,6 +115,43 @@ with tab_models:
 
     st.dataframe(result.metrics, width="stretch", hide_index=True)
     st.pyplot(plot_model_compare(result.metrics), clear_figure=True)
+
+    # ---- 随机森林超参数调优结果 ----
+    st.divider()
+    st.markdown("### 随机森林超参数调优与结果评估")
+
+    if result.tuning_result is not None:
+        tuning = result.tuning_result
+
+        st.markdown(
+            "**调参策略：** 在 PCA 空间做 5 折交叉验证（效率高），在光谱空间评估（可解释）。"
+            "对每组参数在全量训练集上拟合、测试集上预测，逆变换回光谱空间计算 MAE / RMSE / R²。"
+            "综合 RMSE（主指标）和训练时间（效率指标）选出最优参数。"
+        )
+
+        # 最优参数展示
+        st.markdown("**最优参数组合：**")
+        bp = tuning.best_params
+        pc1, pc2, pc3 = st.columns(3)
+        pc1.metric("n_estimators", str(bp.get("n_estimators", "?")))
+        pc2.metric("max_depth", str(bp.get("max_depth", "None")))
+        pc3.metric("min_samples_split", str(bp.get("min_samples_split", "?")))
+
+        best_c = tuning.best_candidate
+        st.markdown(
+            f"**调优后测试集评估：** MAE={best_c.mae:.4f}，RMSE={best_c.rmse:.4f}，"
+            f"R²={best_c.r2:.4f}，训练时间={best_c.train_time_s:.2f}s，预测时间={best_c.predict_time_s:.4f}s"
+        )
+
+        # 全部参数组合对比表
+        st.markdown("**全部参数组合对比（按 RMSE 升序）：**")
+        summary_df = tuning.summary_frame()
+        st.dataframe(summary_df, width="stretch", hide_index=True)
+
+        # 调优总耗时
+        st.caption(f"调优总耗时：{tuning.total_time_s:.1f}s（27 组参数 × 5 折交叉验证）")
+    else:
+        st.info("调优结果未包含在当前缓存中，请重新运行流水线（删除 models/spectrum_model.joblib 后重启）。")
 
 # ---------------- ④ 光谱预测结果 ----------------
 with tab_predict:
