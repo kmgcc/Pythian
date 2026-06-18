@@ -13,3 +13,7 @@ python课设_代码/data/
 
 # PPT 项目工作目录
 python 课设_答辩 PPT/projects/
+
+# 大文件
+*.joblib
+*.zip
