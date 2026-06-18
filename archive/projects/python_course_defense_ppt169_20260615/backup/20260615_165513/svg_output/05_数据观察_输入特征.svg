@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 05</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#2AA3A0"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">模型输入：低成本环境特征</text>
+  </g>
+
+  <!-- Left: Feature table with icons -->
+  <g id="features">
+    <rect x="60" y="130" width="530" height="440" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="530" height="5" rx="2" fill="#2AA3A0"/>
+    <text x="80" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#2AA3A0">输入特征（12 个）</text>
+
+    <!-- Numeric features -->
+    <text x="80" y="205" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#3D8B5E">数值特征（9 个）</text>
+
+    <image href="../images/icon_clock.svg" x="80" y="218" width="24" height="24" fill="#E8842A"/>
+    <text x="112" y="235" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">hour, month</text>
+
+    <image href="../images/icon_sun.svg" x="80" y="248" width="24" height="24" fill="#D4940A"/>
+    <text x="112" y="265" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">solar_altitude, solar_azimuth</text>
+
+    <image href="../images/icon_cloud.svg" x="80" y="278" width="24" height="24" fill="#4A90D9"/>
+    <text x="112" y="295" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">cloud_cover, humidity, temperature</text>
+
+    <image href="../images/icon_rain.svg" x="80" y="308" width="24" height="24" fill="#2AA3A0"/>
+    <text x="112" y="325" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">precipitation, outdoor_lux</text>
+
+    <line x1="80" y1="348" x2="560" y2="348" stroke="#E8E0D4" stroke-width="1"/>
+
+    <!-- Categorical features -->
+    <text x="80" y="378" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#8B6DB0">类别特征（3 个，独热编码）</text>
+
+    <image href="../images/icon_cloud.svg" x="80" y="392" width="24" height="24" fill="#8B6DB0"/>
+    <text x="112" y="410" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">weather（天气类别）</text>
+
+    <image href="../images/icon_cloud.svg" x="80" y="422" width="24" height="24" fill="#8B6DB0"/>
+    <text x="112" y="440" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">sky_condition（天空状况）</text>
+
+    <image href="../images/icon_map.svg" x="80" y="452" width="24" height="24" fill="#8B6DB0"/>
+    <text x="112" y="470" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">location_code（观测站编号）</text>
+
+    <line x1="80" y1="495" x2="560" y2="495" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="80" y="525" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">数值特征标准化 + 类别特征独热编码</text>
+  </g>
+
+  <!-- Right: Feature importance -->
+  <g id="importance">
+    <rect x="620" y="130" width="600" height="440" rx="12" fill="#FFF8EE"/>
+    <rect x="620" y="130" width="600" height="5" rx="2" fill="#D4940A"/>
+    <text x="640" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#D4940A">随机森林特征重要性</text>
+    <image href="../images/feature_importance.png" x="630" y="185" width="580" height="350" preserveAspectRatio="xMidYMid meet"/>
+
+    <!-- Highlight top features -->
+    <rect x="640" y="545" width="560" height="22" rx="4" fill="#FFF3B0"/>
+    <text x="640" y="561" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#D4940A" font-weight="bold">outdoor_lux 54% · cloud_cover 9% · solar_azimuth 6%</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">05 / 15</text>
+  </g>
+</svg>

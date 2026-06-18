@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 10</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#C07040"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">五个模型在同一数据上评价</text>
+  </g>
+
+  <!-- Metrics table with highlights -->
+  <g id="table">
+    <rect x="60" y="130" width="1160" height="220" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="1160" height="5" rx="2" fill="#C07040"/>
+
+    <rect x="60" y="135" width="1160" height="40" fill="#C07040" fill-opacity="0.1"/>
+    <text x="180" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">模型</text>
+    <text x="400" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">MAE</text>
+    <text x="560" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">RMSE</text>
+    <text x="720" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">R²</text>
+    <text x="880" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">训练/s</text>
+    <text x="1040" y="160" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#C07040" text-anchor="middle">预测/s</text>
+
+    <!-- RF row - highlighted -->
+    <rect x="60" y="180" width="1160" height="40" fill="#FFF3B0"/>
+    <text x="180" y="205" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#C07040" text-anchor="middle">Random Forest</text>
+    <text x="400" y="205" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0051</text>
+    <rect x="500" y="190" width="120" height="25" rx="4" fill="#FFF3B0"/>
+    <text x="560" y="205" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#C07040" text-anchor="middle">0.0086</text>
+    <text x="720" y="205" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.959</text>
+    <text x="880" y="205" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.94</text>
+    <text x="1040" y="205" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.22</text>
+
+    <text x="180" y="245" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26" text-anchor="middle">KNN</text>
+    <text x="400" y="245" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0050</text>
+    <text x="560" y="245" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0090</text>
+    <text x="720" y="245" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.954</text>
+    <text x="880" y="245" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.03</text>
+    <text x="1040" y="245" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.14</text>
+
+    <rect x="60" y="260" width="1160" height="40" fill="#8B6DB0" fill-opacity="0.04"/>
+    <text x="180" y="285" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26" text-anchor="middle">MLP</text>
+    <text x="400" y="285" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0058</text>
+    <text x="560" y="285" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0095</text>
+    <rect x="660" y="270" width="120" height="25" rx="4" fill="#FFF3B0"/>
+    <text x="720" y="285" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#8B6DB0" text-anchor="middle">0.962</text>
+    <text x="880" y="285" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">1.87</text>
+    <text x="1040" y="285" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.01</text>
+
+    <text x="180" y="325" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26" text-anchor="middle">Decision Tree</text>
+    <text x="400" y="325" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0054</text>
+    <text x="560" y="325" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0124</text>
+    <text x="720" y="325" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.870</text>
+    <text x="880" y="325" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.03</text>
+    <text x="1040" y="325" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.00</text>
+
+    <rect x="60" y="340" width="1160" height="40" fill="#64748B" fill-opacity="0.04"/>
+    <text x="180" y="365" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26" text-anchor="middle">Linear Regression</text>
+    <text x="400" y="365" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.0225</text>
+    <text x="560" y="365" font-family="Consolas, Courier New, monospace" font-size="18" fill="#E06B5E" text-anchor="middle">0.0376</text>
+    <text x="720" y="365" font-family="Consolas, Courier New, monospace" font-size="18" fill="#E06B5E" text-anchor="middle">0.635</text>
+    <text x="880" y="365" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.03</text>
+    <text x="1040" y="365" font-family="Consolas, Courier New, monospace" font-size="18" fill="#2D2A26" text-anchor="middle">0.01</text>
+  </g>
+
+  <!-- Chart -->
+  <g id="chart">
+    <rect x="60" y="370" width="1160" height="240" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="370" width="1160" height="5" rx="2" fill="#D4940A"/>
+    <image href="../images/model_compare.png" x="70" y="380" width="1140" height="220" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
+  <!-- Conclusion -->
+  <rect x="60" y="625" width="1160" height="45" rx="8" fill="#FFF3B0"/>
+  <text x="80" y="653" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#C07040">随机森林 RMSE 最低（0.0086），综合稳定性最好 → 最终选择</text>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">10 / 15</text>
+  </g>
+</svg>

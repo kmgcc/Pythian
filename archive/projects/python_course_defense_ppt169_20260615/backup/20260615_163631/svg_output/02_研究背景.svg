@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 02</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#E06B5E"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">照明不只关乎"够不够亮"</text>
+  </g>
+
+  <!-- Three keyword progression -->
+  <g id="keywords">
+    <rect x="60" y="140" width="230" height="90" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="140" width="230" height="5" rx="2" fill="#E06B5E"/>
+    <text x="80" y="180" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26" font-weight="bold" fill="#E06B5E">亮度</text>
+    <text x="80" y="210" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">照度看"够不够亮"</text>
+
+    <text x="305" y="190" font-family="Arial, sans-serif" font-size="28" fill="#E8E0D4">→</text>
+
+    <rect x="340" y="140" width="230" height="90" rx="12" fill="#FFF8EE"/>
+    <rect x="340" y="140" width="230" height="5" rx="2" fill="#D4940A"/>
+    <text x="360" y="180" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26" font-weight="bold" fill="#D4940A">色温</text>
+    <text x="360" y="210" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">看冷暖，但不够细致</text>
+
+    <text x="585" y="190" font-family="Arial, sans-serif" font-size="28" fill="#E8E0D4">→</text>
+
+    <rect x="620" y="140" width="280" height="90" rx="12" fill="#E06B5E" fill-opacity="0.1"/>
+    <rect x="620" y="140" width="280" height="5" rx="2" fill="#E06B5E"/>
+    <text x="640" y="180" font-family="Microsoft YaHei, Arial, sans-serif" font-size="26" font-weight="bold" fill="#E06B5E">光谱</text>
+    <text x="640" y="210" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">各波长能量分布，更接近光照质量</text>
+  </g>
+
+  <!-- Core message -->
+  <g id="core">
+    <text x="60" y="280" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="20" fill="#2D2A26">
+      <tspan x="60" dy="0">现代人越来越多时间处在室内，人工照明对学习、办公和生活体验都有影响。</tspan>
+      <tspan x="60" dy="32">常见照明调节主要关注亮度和色温，但这两个指标不能完整描述光的组成。</tspan>
+      <tspan x="60" dy="32">光谱能表示不同波长上的能量分布，是更细致的光照描述方式。</tspan>
+    </text>
+  </g>
+
+  <!-- Highlight box -->
+  <rect x="60" y="400" width="620" height="56" rx="10" fill="#E06B5E" fill-opacity="0.08"/>
+  <text x="80" y="435" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#E06B5E">基于光谱的室内照明调节，是未来高质量照明的一个潜在方向。</text>
+
+  <!-- Image -->
+  <g id="chart">
+    <rect x="720" y="140" width="500" height="360" rx="12" fill="#FFF8EE"/>
+    <image href="../images/weather_spectrum_compare.png" x="730" y="150" width="480" height="320" preserveAspectRatio="xMidYMid meet"/>
+    <text x="730" y="500" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="14" fill="#8C8578">不同天气下平均相对光谱存在差异</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">02 / 15</text>
+  </g>
+</svg>

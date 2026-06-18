@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="oliveAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6B8E3D"/>
+      <stop offset="100%" stop-color="#6B8E3D" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <!-- Header -->
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="11" fill="#B0A898">COURSE DEFENSE · 11</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#6B8E3D"/>
+    <text x="60" y="100" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="bold" fill="#2D2A26">环境特征可以还原相对光谱形状</text>
+  </g>
+
+  <!-- Left: Prediction chart -->
+  <g id="prediction-chart">
+    <rect x="60" y="130" width="600" height="450" rx="12" fill="#FFF8EE"/>
+    <text x="80" y="165" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#6B8E3D">实测光谱 vs 模型预测光谱</text>
+    <image href="../images/prediction_compare.png" x="70" y="180" width="580" height="380" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+
+  <!-- Right: Explanation -->
+  <g id="explanation">
+    <rect x="690" y="130" width="530" height="450" rx="12" fill="#FFF8EE"/>
+
+    <text x="710" y="175" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#6B8E3D">预测路径</text>
+
+    <rect x="710" y="195" width="490" height="180" rx="8" fill="#6B8E3D" fill-opacity="0.06"/>
+    <text x="730" y="225" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">1. 输入环境特征</text>
+    <text x="730" y="255" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">2. 预测 5 个 PCA 系数</text>
+    <text x="730" y="285" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">3. PCA 逆变换还原 41 维光谱</text>
+    <text x="730" y="315" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">4. 与实测光谱曲线比较</text>
+    <text x="730" y="355" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="14" fill="#8C8578">蓝色实线=实测，红色虚线=预测</text>
+
+    <line x1="710" y1="395" x2="1200" y2="395" stroke="#E8E0D4" stroke-width="1"/>
+
+    <text x="710" y="430" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#6B8E3D">结果观察</text>
+
+    <text x="710" y="465" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#2D2A26">
+      <tspan x="710" dy="0">示例样本中，预测曲线与实测曲线</tspan>
+      <tspan x="710" dy="28">基本重合，说明模型能够学习自然光</tspan>
+      <tspan x="710" dy="28">相对光谱的主要变化趋势。</tspan>
+    </text>
+
+    <line x1="710" y1="555" x2="1200" y2="555" stroke="#E8E0D4" stroke-width="1"/>
+
+    <text x="710" y="585" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">结果边界：预测相对光谱形状，不能替代现场光谱仪的绝对测量。</text>
+  </g>
+
+  <!-- Footer -->
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="11" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="11" fill="#B0A898" text-anchor="end">11 / 13</text>
+  </g>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="grayAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#64748B" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <!-- Header -->
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="11" fill="#B0A898">COURSE DEFENSE · 13</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#64748B"/>
+    <text x="60" y="100" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="bold" fill="#2D2A26">项目总结</text>
+  </g>
+
+  <!-- Left column: 特色与不足 -->
+  <g id="left-column">
+    <!-- 特色 -->
+    <rect x="60" y="130" width="560" height="240" rx="12" fill="#FFF8EE"/>
+    <text x="80" y="165" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#3D8B5E">项目特色</text>
+
+    <text x="80" y="200" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">
+      <tspan x="80" dy="0">1. 使用真实公开天光光谱数据</tspan>
+      <tspan x="80" dy="28">2. 明确"环境特征 → PCA 系数 → 光谱还原"建模路径</tspan>
+      <tspan x="80" dy="28">3. 覆盖数据处理、PCA、机器学习、可视化全流程</tspan>
+      <tspan x="80" dy="28">4. 多模型统一比较，按结果选择模型</tspan>
+      <tspan x="80" dy="28">5. 预测光谱用于照明补偿，形成应用闭环</tspan>
+    </text>
+
+    <!-- 不足 -->
+    <rect x="60" y="390" width="560" height="220" rx="12" fill="#FFF8EE"/>
+    <text x="80" y="425" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#E06B5E">主要不足</text>
+
+    <text x="80" y="460" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">
+      <tspan x="80" dy="0">1. 样本集中在少数站点</tspan>
+      <tspan x="80" dy="28">2. 天气数据与光谱测量非完全同步</tspan>
+      <tspan x="80" dy="28">3. 模型估计不能完全替代专业光谱仪</tspan>
+      <tspan x="80" dy="28">4. 当前是算法演示，未接入真实硬件</tspan>
+    </text>
+  </g>
+
+  <!-- Right column: 分工与大模型使用 -->
+  <g id="right-column">
+    <!-- 分工 -->
+    <rect x="650" y="130" width="570" height="240" rx="12" fill="#FFF8EE"/>
+    <text x="670" y="165" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#64748B">小组分工</text>
+
+    <rect x="670" y="185" width="530" height="70" rx="8" fill="#64748B" fill-opacity="0.06"/>
+    <text x="690" y="210" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#64748B">李安逸</text>
+    <text x="690" y="235" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">报告、方法分析、PCA 与模型分析、PPT 逻辑与答辩表达</text>
+
+    <rect x="670" y="265" width="530" height="70" rx="8" fill="#64748B" fill-opacity="0.06"/>
+    <text x="690" y="290" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#64748B">黄奕滔</text>
+    <text x="690" y="315" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#2D2A26">数据处理、代码实现、模型训练、Streamlit 页面、代码注释</text>
+
+    <!-- 大模型使用 -->
+    <rect x="650" y="390" width="570" height="220" rx="12" fill="#FFF8EE"/>
+    <text x="670" y="425" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#64748B">大模型使用情况</text>
+
+    <text x="670" y="460" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">
+      <tspan x="670" dy="0">使用大模型辅助的环节：</tspan>
+      <tspan x="670" dy="28">· 数据源收集和汇总</tspan>
+      <tspan x="670" dy="25">· 报告结构整理和辅助编写</tspan>
+      <tspan x="670" dy="25">· 代码注释与编写辅助</tspan>
+      <tspan x="670" dy="25">· 可视化表达相关代码编写辅助</tspan>
+    </text>
+
+    <line x1="670" y1="590" x2="1200" y2="590" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="670" y="615" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="14" fill="#8C8578">核心思想、计划和整体方案由队员讨论完成，模型和结果由 Python 代码生成。</text>
+  </g>
+
+  <!-- Footer -->
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="11" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="11" fill="#B0A898" text-anchor="end">13 / 13</text>
+  </g>
+</svg>

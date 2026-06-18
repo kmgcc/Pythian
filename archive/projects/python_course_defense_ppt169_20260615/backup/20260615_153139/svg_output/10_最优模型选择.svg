@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4940A"/>
+      <stop offset="100%" stop-color="#D4940A" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <!-- Header -->
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="11" fill="#B0A898">COURSE DEFENSE · 10</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#D4940A"/>
+    <text x="60" y="100" font-family="Microsoft YaHei, Arial, sans-serif" font-size="34" font-weight="bold" fill="#2D2A26">选择 Random Forest：效果与成本更平衡</text>
+  </g>
+
+  <!-- Left: Reasoning -->
+  <g id="reasoning">
+    <rect x="60" y="130" width="600" height="470" rx="12" fill="#FFF8EE"/>
+
+    <!-- Reason 1 -->
+    <rect x="80" y="155" width="560" height="90" rx="8" fill="#FFF8EE"/>
+    <text x="100" y="185" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#E06B5E">为什么不选线性回归</text>
+    <text x="100" y="215" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">误差明显较大（RMSE=0.0376），说明环境特征到光谱变化不是简单线性关系</text>
+
+    <line x1="80" y1="260" x2="620" y2="260" stroke="#E8E0D4" stroke-width="1"/>
+
+    <!-- Reason 2 -->
+    <rect x="80" y="275" width="560" height="90" rx="8" fill="#FFF8EE"/>
+    <text x="100" y="305" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#8B6DB0">为什么关注 MLP</text>
+    <text x="100" y="335" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">代表神经网络路线，R² 略高（0.962），但训练成本更高（1.87s vs 0.94s）</text>
+
+    <line x1="80" y1="380" x2="620" y2="380" stroke="#E8E0D4" stroke-width="1"/>
+
+    <!-- Reason 3 -->
+    <rect x="80" y="395" width="560" height="110" rx="8" fill="#D4940A" fill-opacity="0.08"/>
+    <text x="100" y="425" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D4940A">为什么最终选择 Random Forest</text>
+    <text x="100" y="455" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">RMSE 最低（0.0086）、推理成本低（0.22s）、</text>
+    <text x="100" y="480" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">集成模型稳定性好，综合表现最优</text>
+
+    <!-- Parameters -->
+    <line x1="80" y1="520" x2="620" y2="520" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="100" y="550" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#2D2A26">关键参数</text>
+    <text x="100" y="575" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">n_estimators、max_depth、random_state 等（按代码实际结果填写）</text>
+  </g>
+
+  <!-- Right: Comparison highlight -->
+  <g id="comparison">
+    <rect x="690" y="130" width="530" height="470" rx="12" fill="#FFF8EE"/>
+
+    <text x="710" y="175" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#D4940A">RF vs MLP 关键对比</text>
+
+    <!-- RF -->
+    <rect x="710" y="200" width="490" height="100" rx="8" fill="#D4940A" fill-opacity="0.08"/>
+    <text x="730" y="235" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D4940A">Random Forest</text>
+    <text x="730" y="265" font-family="Consolas, Courier New, monospace" font-size="16" fill="#2D2A26">RMSE: 0.0086 · R²: 0.959 · 训练: 0.94s</text>
+    <text x="730" y="290" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#3D8B5E">RMSE 最低，综合最优 ✓</text>
+
+    <!-- MLP -->
+    <rect x="710" y="320" width="490" height="100" rx="8" fill="#FFF8EE"/>
+    <text x="730" y="355" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#8C8578">MLP</text>
+    <text x="730" y="385" font-family="Consolas, Courier New, monospace" font-size="16" fill="#2D2A26">RMSE: 0.0095 · R²: 0.962 · 训练: 1.87s</text>
+    <text x="730" y="410" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">R² 略高但 RMSE 更大、训练更慢</text>
+
+    <!-- Summary -->
+    <rect x="710" y="450" width="490" height="120" rx="8" fill="#D4940A" fill-opacity="0.06"/>
+    <text x="730" y="485" font-family="Microsoft YaHei, Arial, sans-serif" font-size="17" font-weight="bold" fill="#D4940A">选择依据</text>
+    <text x="730" y="515" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">不只看 R²，也结合 RMSE、训练成本和预测稳定性。</text>
+    <text x="730" y="545" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">以实验结果为依据，不预先认定某个模型最好。</text>
+  </g>
+
+  <!-- Footer -->
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="11" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="11" fill="#B0A898" text-anchor="end">10 / 13</text>
+  </g>
+</svg>

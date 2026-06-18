@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 06</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#2AA3A0"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">模型输出：41 维相对光谱</text>
+  </g>
+
+  <!-- Left: Spectrum image -->
+  <g id="spectrum">
+    <rect x="60" y="130" width="560" height="420" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="560" height="5" rx="2" fill="#8B6DB0"/>
+    <image href="../images/base_spectrum.png" x="70" y="145" width="540" height="350" preserveAspectRatio="xMidYMid meet"/>
+    <text x="80" y="530" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">光谱曲线示例：380–780 nm 范围内的相对光谱</text>
+  </g>
+
+  <!-- Right: Text -->
+  <g id="content">
+    <rect x="650" y="130" width="570" height="420" rx="12" fill="#FFF8EE"/>
+    <rect x="650" y="130" width="570" height="5" rx="2" fill="#2AA3A0"/>
+
+    <text x="670" y="175" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#2AA3A0">输出目标</text>
+    <text x="670" y="210" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="20" fill="#2D2A26">
+      <tspan x="670" dy="0">380–780 nm 可见光范围</tspan>
+      <tspan x="670" dy="32">每 10 nm 一个点，共 41 维</tspan>
+      <tspan x="670" dy="32">关注相对光谱形状</tspan>
+    </text>
+
+    <line x1="670" y1="320" x2="1190" y2="320" stroke="#E8E0D4" stroke-width="1"/>
+
+    <text x="670" y="355" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#8B6DB0">为什么需要 PCA</text>
+    <text x="670" y="390" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="20" fill="#2D2A26">
+      <tspan x="670" dy="0">光谱曲线连续变化，相邻波长</tspan>
+      <tspan x="670" dy="32">高度相关 → 适合 PCA 压缩</tspan>
+      <tspan x="670" dy="32">直接预测 41 维会增加模型难度</tspan>
+    </text>
+
+    <line x1="670" y1="495" x2="1190" y2="495" stroke="#E8E0D4" stroke-width="1"/>
+    <text x="670" y="525" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="17" fill="#8C8578">每条光谱除以自身最大值，模型学习光谱形状而非绝对强度</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">06 / 15</text>
+  </g>
+</svg>

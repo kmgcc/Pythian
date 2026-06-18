@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="coverDecor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8842A" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#D4940A" stop-opacity="0.04"/>
+    </linearGradient>
+    <linearGradient id="accentBar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8842A"/>
+      <stop offset="100%" stop-color="#D4940A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+  <ellipse cx="950" cy="280" rx="420" ry="380" fill="url(#coverDecor)"/>
+  <ellipse cx="180" cy="620" rx="280" ry="220" fill="#E8842A" fill-opacity="0.04"/>
+
+  <!-- Accent bar -->
+  <rect x="80" y="190" width="6" height="140" rx="3" fill="url(#accentBar)"/>
+
+  <!-- Title (simplified) -->
+  <text x="110" y="245" font-family="Microsoft YaHei, Arial, sans-serif" font-size="52" font-weight="bold" fill="#2D2A26">
+    <tspan x="110" dy="0">自然光光谱预测与</tspan>
+    <tspan x="110" dy="68">室内照明补偿设计</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="110" y="430" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="22" fill="#8C8578">
+    使用 Python 数据处理、PCA 降维与机器学习模型，估计自然光相对光谱
+  </text>
+
+  <line x1="110" y1="460" x2="420" y2="460" stroke="#E8E0D4" stroke-width="1"/>
+
+  <!-- Info -->
+  <text x="110" y="505" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="20" fill="#8C8578">
+    <tspan x="110" dy="0">第24组</tspan>
+    <tspan x="110" dy="32">Python 应用开发基础</tspan>
+    <tspan x="110" dy="32">李安逸、黄奕滔</tspan>
+  </text>
+
+  <!-- Decorative spectrum curves -->
+  <path d="M580,320 Q680,240 800,290 Q920,340 1040,270 Q1130,220 1220,260" fill="none" stroke="#E8842A" stroke-width="2.5" stroke-opacity="0.3"/>
+  <path d="M580,350 Q680,280 800,320 Q920,360 1040,300 Q1130,250 1220,285" fill="none" stroke="#D4940A" stroke-width="1.5" stroke-opacity="0.2"/>
+  <path d="M580,380 Q680,310 800,345 Q920,380 1040,325 Q1130,280 1220,310" fill="none" stroke="#E06B5E" stroke-width="1" stroke-opacity="0.15"/>
+
+  <!-- Key numbers -->
+  <g id="key-numbers">
+    <text x="680" y="510" font-family="Consolas, Courier New, monospace" font-size="42" font-weight="bold" fill="#E8842A">41</text>
+    <text x="680" y="540" font-family="Microsoft YaHei, Arial, sans-serif" font-size="14" fill="#8C8578">波长点</text>
+
+    <text x="860" y="510" font-family="Consolas, Courier New, monospace" font-size="42" font-weight="bold" fill="#3D8B5E">5664</text>
+    <text x="860" y="540" font-family="Microsoft YaHei, Arial, sans-serif" font-size="14" fill="#8C8578">样本量</text>
+
+    <text x="1060" y="510" font-family="Consolas, Courier New, monospace" font-size="42" font-weight="bold" fill="#8B6DB0">98.3%</text>
+    <text x="1060" y="540" font-family="Microsoft YaHei, Arial, sans-serif" font-size="14" fill="#8C8578">PCA 累计方差</text>
+  </g>
+
+  <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">01 / 15</text>
+</svg>

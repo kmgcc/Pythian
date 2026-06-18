@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 12</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#C07040"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">随机森林参数设置与调优</text>
+  </g>
+
+  <!-- Left: Parameters -->
+  <g id="params">
+    <rect x="60" y="130" width="560" height="280" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="560" height="5" rx="2" fill="#C07040"/>
+    <text x="80" y="168" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#C07040">关键参数</text>
+
+    <rect x="80" y="185" width="520" height="50" rx="8" fill="#C07040" fill-opacity="0.06"/>
+    <text x="100" y="215" font-family="Consolas, Courier New, monospace" font-size="17" font-weight="bold" fill="#C07040">n_estimators</text>
+    <text x="320" y="215" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">决策树数量，越多越稳定但训练越慢</text>
+
+    <rect x="80" y="245" width="520" height="50" rx="8" fill="#D4940A" fill-opacity="0.06"/>
+    <text x="100" y="275" font-family="Consolas, Courier New, monospace" font-size="17" font-weight="bold" fill="#D4940A">max_depth</text>
+    <text x="320" y="275" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">树的最大深度，控制模型复杂度</text>
+
+    <rect x="80" y="305" width="520" height="50" rx="8" fill="#8B6DB0" fill-opacity="0.06"/>
+    <text x="100" y="335" font-family="Consolas, Courier New, monospace" font-size="17" font-weight="bold" fill="#8B6DB0">min_samples_split</text>
+    <text x="320" y="335" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">内部节点再分裂所需最小样本数</text>
+
+    <rect x="80" y="365" width="520" height="50" rx="8" fill="#3D8B5E" fill-opacity="0.06"/>
+    <text x="100" y="395" font-family="Consolas, Courier New, monospace" font-size="17" font-weight="bold" fill="#3D8B5E">random_state</text>
+    <text x="320" y="395" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">随机种子，保证结果可复现</text>
+  </g>
+
+  <!-- Left bottom: Code snippet -->
+  <g id="code">
+    <rect x="60" y="430" width="560" height="180" rx="12" fill="#2D2A26"/>
+    <text x="80" y="460" font-family="Microsoft YaHei, Arial, sans-serif" font-size="16" font-weight="bold" fill="#D4940A">代码示例</text>
+    <text x="80" y="490" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">from sklearn.ensemble import RandomForestRegressor</text>
+    <text x="80" y="512" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">from sklearn.model_selection import GridSearchCV</text>
+    <text x="80" y="540" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">param_grid = {</text>
+    <text x="80" y="562" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">    'n_estimators': [100, 200, 300],</text>
+    <text x="80" y="584" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">    'max_depth': [10, 20, None]</text>
+    <text x="80" y="606" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">}</text>
+  </g>
+
+  <!-- Right: Tuning process -->
+  <g id="tuning">
+    <rect x="650" y="130" width="570" height="480" rx="12" fill="#FFF8EE"/>
+    <rect x="650" y="130" width="570" height="5" rx="2" fill="#D4940A"/>
+    <text x="670" y="168" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#D4940A">调优过程</text>
+
+    <rect x="670" y="185" width="530" height="65" rx="8" fill="#FFF3B0"/>
+    <text x="690" y="215" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#D4940A">1. 参数对比实验</text>
+    <text x="690" y="240" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">固定其他参数，逐一测试各参数的影响</text>
+
+    <rect x="670" y="265" width="530" height="65" rx="8" fill="#C07040" fill-opacity="0.06"/>
+    <text x="690" y="295" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#C07040">2. 交叉验证</text>
+    <text x="690" y="320" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">使用 K 折交叉验证评估参数组合稳定性</text>
+
+    <rect x="670" y="345" width="530" height="65" rx="8" fill="#8B6DB0" fill-opacity="0.06"/>
+    <text x="690" y="375" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#8B6DB0">3. 选择最优组合</text>
+    <text x="690" y="400" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">综合 RMSE 和训练时间选择最佳参数</text>
+
+    <rect x="670" y="425" width="530" height="65" rx="8" fill="#3D8B5E" fill-opacity="0.06"/>
+    <text x="690" y="455" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" font-weight="bold" fill="#3D8B5E">4. 最终模型</text>
+    <text x="690" y="480" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#2D2A26">使用调优后的参数训练最终模型</text>
+
+    <!-- Code snippet -->
+    <rect x="670" y="510" width="530" height="90" rx="8" fill="#2D2A26"/>
+    <text x="690" y="538" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">grid = GridSearchCV(rf, param_grid, cv=5)</text>
+    <text x="690" y="560" font-family="Consolas, Courier New, monospace" font-size="14" fill="#E8E0D4">grid.fit(X_train, y_train)</text>
+    <text x="690" y="582" font-family="Consolas, Courier New, monospace" font-size="14" fill="#D4940A">best_rf = grid.best_estimator_</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">12 / 15</text>
+  </g>
+</svg>

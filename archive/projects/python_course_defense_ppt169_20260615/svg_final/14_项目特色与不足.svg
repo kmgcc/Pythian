@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7" />
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 14</text>
+    <path fill="#64748B" d="M61.50,65 H108.50 A1.50,1.50 0 0 1 110,66.50 V66.50 A1.50,1.50 0 0 1 108.50,68 H61.50 A1.50,1.50 0 0 1 60,66.50 V66.50 A1.50,1.50 0 0 1 61.50,65 Z" />
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">项目特色与不足</text>
+  </g>
+
+  
+  <g id="features">
+    <path fill="#FFF8EE" d="M72,130 H608 A12,12 0 0 1 620,142 V598 A12,12 0 0 1 608,610 H72 A12,12 0 0 1 60,598 V142 A12,12 0 0 1 72,130 Z" />
+    <path fill="#3D8B5E" d="M62,130 H618 A2,2 0 0 1 620,132 V133 A2,2 0 0 1 618,135 H62 A2,2 0 0 1 60,133 V132 A2,2 0 0 1 62,130 Z" />
+    <text x="80" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="24" font-weight="bold" fill="#3D8B5E">项目特色</text>
+
+    <path fill="#3D8B5E" fill-opacity="0.06" d="M88,195 H592 A8,8 0 0 1 600,203 V242 A8,8 0 0 1 592,250 H88 A8,8 0 0 1 80,242 V203 A8,8 0 0 1 88,195 Z" />
+    <text x="100" y="228" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">1. 使用真实公开天光光谱数据</text>
+
+    <path fill="#2AA3A0" fill-opacity="0.06" d="M88,260 H592 A8,8 0 0 1 600,268 V307 A8,8 0 0 1 592,315 H88 A8,8 0 0 1 80,307 V268 A8,8 0 0 1 88,260 Z" />
+    <text x="100" y="293" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">2. 明确"环境特征 → PCA → 光谱还原"路径</text>
+
+    <path fill="#8B6DB0" fill-opacity="0.06" d="M88,325 H592 A8,8 0 0 1 600,333 V372 A8,8 0 0 1 592,380 H88 A8,8 0 0 1 80,372 V333 A8,8 0 0 1 88,325 Z" />
+    <text x="100" y="358" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">3. 覆盖数据处理、PCA、ML、可视化全流程</text>
+
+    <path fill="#E8842A" fill-opacity="0.06" d="M88,390 H592 A8,8 0 0 1 600,398 V437 A8,8 0 0 1 592,445 H88 A8,8 0 0 1 80,437 V398 A8,8 0 0 1 88,390 Z" />
+    <text x="100" y="423" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">4. 多模型统一比较，按结果选择模型</text>
+
+    <path fill="#D4940A" fill-opacity="0.06" d="M88,455 H592 A8,8 0 0 1 600,463 V502 A8,8 0 0 1 592,510 H88 A8,8 0 0 1 80,502 V463 A8,8 0 0 1 88,455 Z" />
+    <text x="100" y="488" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">5. 预测光谱用于照明补偿，形成应用闭环</text>
+
+    <path fill="#D46B8C" fill-opacity="0.06" d="M88,520 H592 A8,8 0 0 1 600,528 V567 A8,8 0 0 1 592,575 H88 A8,8 0 0 1 80,567 V528 A8,8 0 0 1 88,520 Z" />
+    <text x="100" y="553" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">6. 课程知识覆盖完整，可复现</text>
+  </g>
+
+  
+  <g id="shortcomings">
+    <path fill="#FFF8EE" d="M662,130 H1208 A12,12 0 0 1 1220,142 V598 A12,12 0 0 1 1208,610 H662 A12,12 0 0 1 650,598 V142 A12,12 0 0 1 662,130 Z" />
+    <path fill="#E06B5E" d="M652,130 H1218 A2,2 0 0 1 1220,132 V133 A2,2 0 0 1 1218,135 H652 A2,2 0 0 1 650,133 V132 A2,2 0 0 1 652,130 Z" />
+    <text x="670" y="170" font-family="Microsoft YaHei, Arial, sans-serif" font-size="24" font-weight="bold" fill="#E06B5E">主要不足</text>
+
+    <path fill="#E06B5E" fill-opacity="0.06" d="M678,195 H1192 A8,8 0 0 1 1200,203 V252 A8,8 0 0 1 1192,260 H678 A8,8 0 0 1 670,252 V203 A8,8 0 0 1 678,195 Z" />
+    <text x="690" y="230" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">1. 样本集中在少数站点</text>
+    <text x="690" y="252" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">数据来源有限，代表性不够广泛</text>
+
+    <path fill="#E06B5E" fill-opacity="0.06" d="M678,275 H1192 A8,8 0 0 1 1200,283 V332 A8,8 0 0 1 1192,340 H678 A8,8 0 0 1 670,332 V283 A8,8 0 0 1 678,275 Z" />
+    <text x="690" y="310" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">2. 天气数据与光谱非完全同步</text>
+    <text x="690" y="332" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">天气为对齐的历史特征，非现场测量</text>
+
+    <path fill="#E06B5E" fill-opacity="0.06" d="M678,355 H1192 A8,8 0 0 1 1200,363 V412 A8,8 0 0 1 1192,420 H678 A8,8 0 0 1 670,412 V363 A8,8 0 0 1 678,355 Z" />
+    <text x="690" y="390" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">3. 模型不能完全替代专业光谱仪</text>
+    <text x="690" y="412" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">估计的是相对光谱形状，非绝对测量</text>
+
+    <path fill="#E06B5E" fill-opacity="0.06" d="M678,435 H1192 A8,8 0 0 1 1200,443 V492 A8,8 0 0 1 1192,500 H678 A8,8 0 0 1 670,492 V443 A8,8 0 0 1 678,435 Z" />
+    <text x="690" y="470" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">4. 当前是算法演示，未接入硬件</text>
+    <text x="690" y="492" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">暂未接入真实照明硬件验证</text>
+
+    <path fill="#E06B5E" fill-opacity="0.06" d="M678,515 H1192 A8,8 0 0 1 1200,523 V572 A8,8 0 0 1 1192,580 H678 A8,8 0 0 1 670,572 V523 A8,8 0 0 1 678,515 Z" />
+    <text x="690" y="550" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">5. 补偿效果有待更细的评价</text>
+    <text x="690" y="572" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">可进一步评估舒适度和显色效果</text>
+  </g>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">14 / 15</text>
+  </g>
+</svg>

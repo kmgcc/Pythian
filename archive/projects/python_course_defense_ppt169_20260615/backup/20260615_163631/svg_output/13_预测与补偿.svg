@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 13</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#6B8E3D"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">预测结果与照明补偿</text>
+  </g>
+
+  <!-- Left: Prediction -->
+  <g id="prediction">
+    <rect x="60" y="130" width="560" height="450" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="130" width="560" height="5" rx="2" fill="#6B8E3D"/>
+    <text x="80" y="168" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#6B8E3D">光谱预测结果</text>
+    <image href="../images/prediction_compare.png" x="70" y="180" width="540" height="320" preserveAspectRatio="xMidYMid meet"/>
+    <text x="80" y="530" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">蓝色=实测，红色虚线=预测，两条曲线基本重合</text>
+  </g>
+
+  <!-- Right: Compensation -->
+  <g id="compensation">
+    <rect x="650" y="130" width="570" height="450" rx="12" fill="#FFF8EE"/>
+    <rect x="650" y="130" width="570" height="5" rx="2" fill="#D46B8C"/>
+    <text x="670" y="168" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#D46B8C">七通道 LED 补偿</text>
+    <image href="../images/compensation_result.png" x="660" y="180" width="550" height="320" preserveAspectRatio="xMidYMid meet"/>
+    <text x="670" y="530" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="16" fill="#8C8578">多通道 LED 自由度更多，能按波段局部补偿</text>
+  </g>
+
+  <!-- Bottom note -->
+  <rect x="60" y="600" width="1160" height="60" rx="10" fill="#FFF3B0"/>
+  <text x="80" y="635" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="18" fill="#2D2A26">
+    预测路径：环境特征 → 5 个 PCA 系数 → PCA 逆变换 → 41 维光谱 → LED 补偿
+  </text>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">13 / 15</text>
+  </g>
+</svg>

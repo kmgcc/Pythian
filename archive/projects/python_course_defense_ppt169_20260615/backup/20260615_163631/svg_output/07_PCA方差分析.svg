@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <rect width="1280" height="720" fill="#FDFBF7"/>
+
+  <g id="header">
+    <text x="60" y="50" font-family="Arial, sans-serif" font-size="12" fill="#B0A898">COURSE DEFENSE · 07</text>
+    <rect x="60" y="65" width="50" height="3" rx="1.5" fill="#8B6DB0"/>
+    <text x="60" y="108" font-family="Microsoft YaHei, Arial, sans-serif" font-size="38" font-weight="bold" fill="#2D2A26">为什么选择 5 个主成分</text>
+  </g>
+
+  <text x="60" y="155" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="20" fill="#2D2A26">测试前 1～10 个主成分的累计解释方差，选择能保留大部分信息的最少数量。</text>
+
+  <!-- PCA chart -->
+  <g id="pca-chart">
+    <rect x="60" y="180" width="600" height="380" rx="12" fill="#FFF8EE"/>
+    <rect x="60" y="180" width="600" height="5" rx="2" fill="#8B6DB0"/>
+    <image href="../images/pca_variance.png" x="70" y="195" width="580" height="320" preserveAspectRatio="xMidYMid meet"/>
+    <text x="80" y="550" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="15" fill="#8C8578">前 5 个主成分累计解释方差约 98.3%</text>
+  </g>
+
+  <!-- Variance breakdown with highlight -->
+  <g id="variance">
+    <rect x="690" y="180" width="530" height="380" rx="12" fill="#FFF8EE"/>
+    <rect x="690" y="180" width="530" height="5" rx="2" fill="#D4940A"/>
+    <text x="710" y="220" font-family="Microsoft YaHei, Arial, sans-serif" font-size="22" font-weight="bold" fill="#D4940A">各主成分解释方差</text>
+
+    <!-- PC1 - large bar -->
+    <rect x="710" y="245" width="490" height="50" rx="6" fill="#8B6DB0" fill-opacity="0.1"/>
+    <text x="730" y="275" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26">PC1</text>
+    <rect x="790" y="255" width="340" height="30" rx="4" fill="#8B6DB0" fill-opacity="0.3"/>
+    <text x="1140" y="275" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#8B6DB0" text-anchor="end">84.03%</text>
+
+    <!-- PC2 -->
+    <rect x="710" y="305" width="490" height="50" rx="6" fill="#2AA3A0" fill-opacity="0.1"/>
+    <text x="730" y="335" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26">PC2</text>
+    <rect x="790" y="315" width="40" height="30" rx="4" fill="#2AA3A0" fill-opacity="0.3"/>
+    <text x="1140" y="335" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#2AA3A0" text-anchor="end">6.64%</text>
+
+    <!-- PC3 -->
+    <rect x="710" y="365" width="490" height="50" rx="6" fill="#E8842A" fill-opacity="0.1"/>
+    <text x="730" y="395" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26">PC3</text>
+    <rect x="790" y="375" width="22" height="30" rx="4" fill="#E8842A" fill-opacity="0.3"/>
+    <text x="1140" y="395" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#E8842A" text-anchor="end">3.34%</text>
+
+    <!-- PC4 -->
+    <rect x="710" y="425" width="490" height="50" rx="6" fill="#D4940A" fill-opacity="0.1"/>
+    <text x="730" y="455" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26">PC4</text>
+    <rect x="790" y="435" width="16" height="30" rx="4" fill="#D4940A" fill-opacity="0.3"/>
+    <text x="1140" y="455" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#D4940A" text-anchor="end">2.42%</text>
+
+    <!-- PC5 -->
+    <rect x="710" y="485" width="490" height="50" rx="6" fill="#3D8B5E" fill-opacity="0.1"/>
+    <text x="730" y="515" font-family="Microsoft YaHei, Arial, sans-serif" font-size="18" fill="#2D2A26">PC5</text>
+    <rect x="790" y="495" width="13" height="30" rx="4" fill="#3D8B5E" fill-opacity="0.3"/>
+    <text x="1140" y="515" font-family="Consolas, Courier New, monospace" font-size="18" font-weight="bold" fill="#3D8B5E" text-anchor="end">1.91%</text>
+  </g>
+
+  <!-- Cumulative highlight -->
+  <rect x="690" y="575" width="530" height="60" rx="10" fill="#FFF3B0"/>
+  <text x="710" y="610" font-family="Microsoft YaHei, Arial, sans-serif" font-size="20" font-weight="bold" fill="#D4940A">累计解释方差</text>
+  <text x="1140" y="610" font-family="Consolas, Courier New, monospace" font-size="28" font-weight="bold" fill="#D4940A" text-anchor="end">98.35%</text>
+
+  <g id="footer">
+    <text x="60" y="690" font-family="Microsoft YaHei, PingFang SC, Arial, sans-serif" font-size="12" fill="#B0A898">基于真实天光数据的自然光光谱估计与室内照明补偿设计</text>
+    <text x="1220" y="690" font-family="Arial, sans-serif" font-size="12" fill="#B0A898" text-anchor="end">07 / 15</text>
+  </g>
+</svg>
